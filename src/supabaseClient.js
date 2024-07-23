@@ -1,3 +1,4 @@
+// File: /finance/src/supabaseClient.js
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://ncywnemrhsilqvkmavnj.supabase.co'
