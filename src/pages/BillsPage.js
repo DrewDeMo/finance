@@ -1,5 +1,5 @@
 // src/pages/BillsPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 
 const BillsPage = ({ user }) => {
@@ -17,6 +17,8 @@ const BillsPage = ({ user }) => {
         paid_date: null
     });
     const [activeCategory, setActiveCategory] = useState('Family');
+    const [sortConfig, setSortConfig] = useState({ key: 'dueDate', direction: 'ascending' });
+    const [filterStatus, setFilterStatus] = useState('all');
 
     useEffect(() => {
         fetchBills();
@@ -26,8 +28,7 @@ const BillsPage = ({ user }) => {
         const { data, error } = await supabase
             .from('bills')
             .select('*')
-            .eq('user_id', user.id)
-            .order('dueDate', { ascending: true });
+            .eq('user_id', user.id);
 
         if (error) console.error('Error fetching bills:', error);
         else setBills(data);
@@ -89,7 +90,7 @@ const BillsPage = ({ user }) => {
         const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
         const { data, error } = await supabase
             .from('bills')
-            .update({ status: newStatus })
+            .update({ status: newStatus, paid_date: newStatus === 'paid' ? new Date().toISOString() : null })
             .eq('id', id)
             .select();
 
@@ -132,139 +133,45 @@ const BillsPage = ({ user }) => {
         });
     };
 
-    const renderBillForm = () => (
-        <form onSubmit={handleSubmit} className="mb-8 space-y-4">
-            <input
-                type="text"
-                name="name"
-                value={editingBill ? editingBill.name : newBill.name}
-                onChange={handleInputChange}
-                placeholder="Bill Name"
-                className="w-full p-2 border rounded"
-                required
-            />
-            <input
-                type="number"
-                name="amount"
-                value={editingBill ? editingBill.amount : newBill.amount}
-                onChange={handleInputChange}
-                placeholder="Amount"
-                className="w-full p-2 border rounded"
-                required
-            />
-            <input
-                type="date"
-                name="dueDate"
-                value={editingBill ? editingBill.dueDate : newBill.dueDate}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                required
-            />
-            <input
-                type="url"
-                name="paymentUrl"
-                value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
-                onChange={handleInputChange}
-                placeholder="Payment URL"
-                className="w-full p-2 border rounded"
-            />
-            <select
-                name="frequency"
-                value={editingBill ? editingBill.frequency : newBill.frequency}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-            >
-                <option value="monthly">Monthly</option>
-                <option value="bi-monthly">Bi-Monthly</option>
-                <option value="one-time">One-Time</option>
-            </select>
-            <select
-                name="subcategory"
-                value={editingBill ? editingBill.subcategory : newBill.subcategory}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-            >
-                <option value="">Select Subcategory</option>
-                <option value="Heating">Heating</option>
-                <option value="Food">Food</option>
-                <option value="Electricity">Electricity</option>
-                <option value="Internet">Internet</option>
-                <option value="Phone">Phone</option>
-                <option value="Insurance">Insurance</option>
-                <option value="Other">Other</option>
-            </select>
-            <select
-                name="status"
-                value={editingBill ? editingBill.status : newBill.status}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-            >
-                <option value="unpaid">Unpaid</option>
-                <option value="paid">Paid</option>
-            </select>
-            {(editingBill?.status === 'paid' || newBill.status === 'paid') && (
-                <input
-                    type="date"
-                    name="paid_date"
-                    value={editingBill ? editingBill.paid_date : newBill.paid_date}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                />
-            )}
-            <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-                {editingBill ? 'Update Bill' : 'Add Bill'}
-            </button>
-            {editingBill && (
-                <button type="button" onClick={cancelEditing} className="w-full p-2 bg-gray-500 text-white rounded">
-                    Cancel Editing
-                </button>
-            )}
-        </form>
-    );
+    const sortedBills = useMemo(() => {
+        let sortableBills = [...bills].filter(bill => bill.category === activeCategory);
+        if (filterStatus !== 'all') {
+            sortableBills = sortableBills.filter(bill => bill.status === filterStatus);
+        }
+        sortableBills.sort((a, b) => {
+            if (a[sortConfig.key] < b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (a[sortConfig.key] > b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+        return sortableBills;
+    }, [bills, activeCategory, sortConfig, filterStatus]);
 
-    const renderBillsList = (category) => (
-        <div className="space-y-4">
-            {bills.filter(bill => bill.category === category).map((bill) => (
-                <div key={bill.id} className="border p-4 rounded flex justify-between items-center">
-                    <div>
-                        <h3 className="font-bold">{bill.name}</h3>
-                        <p>Amount: ${bill.amount}</p>
-                        <p>Due Date: {new Date(bill.dueDate).toLocaleDateString()}</p>
-                        <p>Subcategory: {bill.subcategory}</p>
-                        <p>Frequency: {bill.frequency}</p>
-                        {bill.paymentUrl && (
-                            <a href={bill.paymentUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                                Pay Bill
-                            </a>
-                        )}
-                        {bill.status === 'paid' && bill.paid_date && (
-                            <p>Paid on: {new Date(bill.paid_date).toLocaleDateString()}</p>
-                        )}
-                    </div>
-                    <div className="space-x-2">
-                        <button
-                            onClick={() => toggleBillStatus(bill.id, bill.status)}
-                            className={`px-4 py-2 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'} text-white`}
-                        >
-                            {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
-                        </button>
-                        <button
-                            onClick={() => startEditing(bill)}
-                            className="px-4 py-2 rounded bg-yellow-500 text-white"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => deleteBill(bill.id)}
-                            className="px-4 py-2 rounded bg-red-700 text-white"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const summarizeBills = (bills) => {
+        const summary = bills.reduce((acc, bill) => {
+            acc.totalAmount += parseFloat(bill.amount);
+            acc.paidAmount += bill.status === 'paid' ? parseFloat(bill.amount) : 0;
+            acc.unpaidAmount += bill.status === 'unpaid' ? parseFloat(bill.amount) : 0;
+            return acc;
+        }, { totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
+        summary.totalAmount = summary.totalAmount.toFixed(2);
+        summary.paidAmount = summary.paidAmount.toFixed(2);
+        summary.unpaidAmount = summary.unpaidAmount.toFixed(2);
+        return summary;
+    };
+
+    const billSummary = summarizeBills(sortedBills);
 
     return (
         <div className="container mx-auto p-4">
@@ -283,8 +190,140 @@ const BillsPage = ({ user }) => {
             </div>
 
             <h2 className="text-xl font-semibold mb-4">{activeCategory}'s Bills</h2>
-            {renderBillForm()}
-            {renderBillsList(activeCategory)}
+
+            <div className="mb-4 p-4 bg-gray-100 rounded">
+                <h3 className="font-bold mb-2">Summary</h3>
+                <p>Total Amount: ${billSummary.totalAmount}</p>
+                <p>Paid Amount: ${billSummary.paidAmount}</p>
+                <p>Unpaid Amount: ${billSummary.unpaidAmount}</p>
+            </div>
+
+            <div className="mb-4">
+                <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="p-2 border rounded"
+                >
+                    <option value="all">All Bills</option>
+                    <option value="paid">Paid Bills</option>
+                    <option value="unpaid">Unpaid Bills</option>
+                </select>
+            </div>
+
+            <table className="w-full mb-8">
+                <thead>
+                    <tr>
+                        <th onClick={() => requestSort('name')} className="cursor-pointer">Name</th>
+                        <th onClick={() => requestSort('amount')} className="cursor-pointer">Amount</th>
+                        <th onClick={() => requestSort('dueDate')} className="cursor-pointer">Due Date</th>
+                        <th onClick={() => requestSort('subcategory')} className="cursor-pointer">Subcategory</th>
+                        <th onClick={() => requestSort('status')} className="cursor-pointer">Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedBills.map((bill) => (
+                        <tr key={bill.id} className="border-b">
+                            <td>{bill.name}</td>
+                            <td>${bill.amount}</td>
+                            <td>{new Date(bill.dueDate).toLocaleDateString()}</td>
+                            <td>{bill.subcategory}</td>
+                            <td>{bill.status}</td>
+                            <td>
+                                <button
+                                    onClick={() => toggleBillStatus(bill.id, bill.status)}
+                                    className={`px-2 py-1 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'} text-white mr-2`}
+                                >
+                                    {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                </button>
+                                <button
+                                    onClick={() => startEditing(bill)}
+                                    className="px-2 py-1 rounded bg-yellow-500 text-white mr-2"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => deleteBill(bill.id)}
+                                    className="px-2 py-1 rounded bg-red-700 text-white"
+                                >
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            <h3 className="text-lg font-semibold mb-2">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <input
+                    type="text"
+                    name="name"
+                    value={editingBill ? editingBill.name : newBill.name}
+                    onChange={handleInputChange}
+                    placeholder="Bill Name"
+                    className="w-full p-2 border rounded"
+                    required
+                />
+                <input
+                    type="number"
+                    name="amount"
+                    value={editingBill ? editingBill.amount : newBill.amount}
+                    onChange={handleInputChange}
+                    placeholder="Amount"
+                    className="w-full p-2 border rounded"
+                    required
+                />
+                <input
+                    type="date"
+                    name="dueDate"
+                    value={editingBill ? editingBill.dueDate : newBill.dueDate}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                />
+                <input
+                    type="url"
+                    name="paymentUrl"
+                    value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
+                    onChange={handleInputChange}
+                    placeholder="Payment URL"
+                    className="w-full p-2 border rounded"
+                />
+                <select
+                    name="frequency"
+                    value={editingBill ? editingBill.frequency : newBill.frequency}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                >
+                    <option value="monthly">Monthly</option>
+                    <option value="bi-monthly">Bi-Monthly</option>
+                    <option value="one-time">One-Time</option>
+                </select>
+                <select
+                    name="subcategory"
+                    value={editingBill ? editingBill.subcategory : newBill.subcategory}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                >
+                    <option value="">Select Subcategory</option>
+                    <option value="Heating">Heating</option>
+                    <option value="Food">Food</option>
+                    <option value="Electricity">Electricity</option>
+                    <option value="Internet">Internet</option>
+                    <option value="Phone">Phone</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
+                    {editingBill ? 'Update Bill' : 'Add Bill'}
+                </button>
+                {editingBill && (
+                    <button type="button" onClick={cancelEditing} className="w-full p-2 bg-gray-500 text-white rounded">
+                        Cancel Editing
+                    </button>
+                )}
+            </form>
         </div>
     );
 };
