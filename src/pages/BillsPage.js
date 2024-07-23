@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
+    const [editingBill, setEditingBill] = useState(null);
     const [newBill, setNewBill] = useState({
         name: '',
         amount: '',
@@ -22,6 +23,7 @@ const BillsPage = ({ user }) => {
         const { data, error } = await supabase
             .from('bills')
             .select('*')
+            .eq('user_id', user.id)
             .order('dueDate', { ascending: true });
 
         if (error) console.error('Error fetching bills:', error);
@@ -29,27 +31,45 @@ const BillsPage = ({ user }) => {
     };
 
     const handleInputChange = (e) => {
-        setNewBill({ ...newBill, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        if (editingBill) {
+            setEditingBill({ ...editingBill, [name]: value });
+        } else {
+            setNewBill({ ...newBill, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { data, error } = await supabase
-            .from('bills')
-            .insert([{ ...newBill, user_id: user.id }]);
+        if (editingBill) {
+            const { error } = await supabase
+                .from('bills')
+                .update(editingBill)
+                .eq('id', editingBill.id);
 
-        if (error) console.error('Error adding bill:', error);
-        else {
-            fetchBills();
-            setNewBill({
-                name: '',
-                amount: '',
-                dueDate: '',
-                paymentUrl: '',
-                frequency: 'monthly',
-                category: 'Family',
-                status: 'unpaid'
-            });
+            if (error) console.error('Error updating bill:', error);
+            else {
+                fetchBills();
+                setEditingBill(null);
+            }
+        } else {
+            const { error } = await supabase
+                .from('bills')
+                .insert([{ ...newBill, user_id: user.id }]);
+
+            if (error) console.error('Error adding bill:', error);
+            else {
+                fetchBills();
+                setNewBill({
+                    name: '',
+                    amount: '',
+                    dueDate: '',
+                    paymentUrl: '',
+                    frequency: 'monthly',
+                    category: 'Family',
+                    status: 'unpaid'
+                });
+            }
         }
     };
 
@@ -64,6 +84,34 @@ const BillsPage = ({ user }) => {
         else fetchBills();
     };
 
+    const deleteBill = async (id) => {
+        const { error } = await supabase
+            .from('bills')
+            .delete()
+            .eq('id', id);
+
+        if (error) console.error('Error deleting bill:', error);
+        else fetchBills();
+    };
+
+    const startEditing = (bill) => {
+        setEditingBill(bill);
+        setNewBill(bill);
+    };
+
+    const cancelEditing = () => {
+        setEditingBill(null);
+        setNewBill({
+            name: '',
+            amount: '',
+            dueDate: '',
+            paymentUrl: '',
+            frequency: 'monthly',
+            category: 'Family',
+            status: 'unpaid'
+        });
+    };
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Bills</h1>
@@ -72,7 +120,7 @@ const BillsPage = ({ user }) => {
                 <input
                     type="text"
                     name="name"
-                    value={newBill.name}
+                    value={editingBill ? editingBill.name : newBill.name}
                     onChange={handleInputChange}
                     placeholder="Bill Name"
                     className="w-full p-2 border rounded"
@@ -81,7 +129,7 @@ const BillsPage = ({ user }) => {
                 <input
                     type="number"
                     name="amount"
-                    value={newBill.amount}
+                    value={editingBill ? editingBill.amount : newBill.amount}
                     onChange={handleInputChange}
                     placeholder="Amount"
                     className="w-full p-2 border rounded"
@@ -90,7 +138,7 @@ const BillsPage = ({ user }) => {
                 <input
                     type="date"
                     name="dueDate"
-                    value={newBill.dueDate}
+                    value={editingBill ? editingBill.dueDate : newBill.dueDate}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                     required
@@ -98,14 +146,14 @@ const BillsPage = ({ user }) => {
                 <input
                     type="url"
                     name="paymentUrl"
-                    value={newBill.paymentUrl}
+                    value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
                     onChange={handleInputChange}
                     placeholder="Payment URL"
                     className="w-full p-2 border rounded"
                 />
                 <select
                     name="frequency"
-                    value={newBill.frequency}
+                    value={editingBill ? editingBill.frequency : newBill.frequency}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                 >
@@ -115,7 +163,7 @@ const BillsPage = ({ user }) => {
                 </select>
                 <select
                     name="category"
-                    value={newBill.category}
+                    value={editingBill ? editingBill.category : newBill.category}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                 >
@@ -125,8 +173,13 @@ const BillsPage = ({ user }) => {
                     <option value="One-time">One-time Expense</option>
                 </select>
                 <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-                    Add Bill
+                    {editingBill ? 'Update Bill' : 'Add Bill'}
                 </button>
+                {editingBill && (
+                    <button type="button" onClick={cancelEditing} className="w-full p-2 bg-gray-500 text-white rounded">
+                        Cancel Editing
+                    </button>
+                )}
             </form>
 
             <div className="space-y-4">
@@ -144,13 +197,27 @@ const BillsPage = ({ user }) => {
                                 </a>
                             )}
                         </div>
-                        <button
-                            onClick={() => toggleBillStatus(bill.id, bill.status)}
-                            className={`px-4 py-2 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'
-                                } text-white`}
-                        >
-                            {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
-                        </button>
+                        <div className="space-x-2">
+                            <button
+                                onClick={() => toggleBillStatus(bill.id, bill.status)}
+                                className={`px-4 py-2 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'
+                                    } text-white`}
+                            >
+                                {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
+                            </button>
+                            <button
+                                onClick={() => startEditing(bill)}
+                                className="px-4 py-2 rounded bg-yellow-500 text-white"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => deleteBill(bill.id)}
+                                className="px-4 py-2 rounded bg-red-700 text-white"
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
