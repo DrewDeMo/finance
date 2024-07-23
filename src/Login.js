@@ -1,7 +1,7 @@
 // File: /finance/src/Login.js
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
-import SignUp from './components/SignUp';
+import SignUp from '../src/components/SignUp';
 
 const Login = ({ setUser }) => {
     const [email, setEmail] = useState('');
