@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { supabase, getSession } from './supabaseClient';
+import { NotificationProvider } from './context/NotificationContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import BillsPage from './pages/BillsPage';
@@ -34,22 +37,25 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        {user ? (
-          <>
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Dashboard user={user} />} />
-              <Route path="/bills" element={<BillsPage user={user} />} />
-              <Route path="/calendar" element={<CalendarPage user={user} />} />
-              <Route path="/analysis" element={<AnalysisPage user={user} />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </>
-        ) : (
-          <Login setUser={setUser} />
-        )}
-      </div>
+      <NotificationProvider>
+        <div className="App">
+          {user ? (
+            <>
+              <Navigation />
+              <Routes>
+                <Route path="/" element={<Dashboard user={user} />} />
+                <Route path="/bills" element={<BillsPage user={user} />} />
+                <Route path="/calendar" element={<CalendarPage user={user} />} />
+                <Route path="/analysis" element={<AnalysisPage user={user} />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </>
+          ) : (
+            <Login setUser={setUser} />
+          )}
+          <ToastContainer position="bottom-right" />
+        </div>
+      </NotificationProvider>
     </Router>
   );
 }

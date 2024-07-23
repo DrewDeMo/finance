@@ -1,6 +1,7 @@
 // src/pages/BillsPage.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
+import { useNotification } from '../context/NotificationContext';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
@@ -19,6 +20,7 @@ const BillsPage = ({ user }) => {
     const [activeCategory, setActiveCategory] = useState('Family');
     const [sortConfig, setSortConfig] = useState({ key: 'dueDate', direction: 'ascending' });
     const [filterStatus, setFilterStatus] = useState('all');
+    const { addNotification } = useNotification();
 
     useEffect(() => {
         fetchBills();
@@ -30,8 +32,27 @@ const BillsPage = ({ user }) => {
             .select('*')
             .eq('user_id', user.id);
 
-        if (error) console.error('Error fetching bills:', error);
-        else setBills(data);
+        if (error) {
+            console.error('Error fetching bills:', error);
+            addNotification('Error fetching bills', 'error');
+        } else {
+            setBills(data);
+            checkUpcomingBills(data);
+        }
+    };
+
+    const checkUpcomingBills = (bills) => {
+        const today = new Date();
+        const upcomingBills = bills.filter(bill => {
+            const dueDate = new Date(bill.dueDate);
+            const timeDiff = dueDate.getTime() - today.getTime();
+            const daysDiff = timeDiff / (1000 * 3600 * 24);
+            return daysDiff <= 3 && daysDiff > 0 && bill.status === 'unpaid';
+        });
+
+        upcomingBills.forEach(bill => {
+            addNotification(`${bill.name} is due in ${Math.ceil((new Date(bill.dueDate) - today) / (1000 * 60 * 60 * 24))} days`, 'warning');
+        });
     };
 
     const handleInputChange = (e) => {
@@ -59,18 +80,23 @@ const BillsPage = ({ user }) => {
                 .update(dataToSubmit)
                 .eq('id', editingBill.id);
 
-            if (error) console.error('Error updating bill:', error);
-            else {
+            if (error) {
+                console.error('Error updating bill:', error);
+                addNotification('Error updating bill', 'error');
+            } else {
                 fetchBills();
                 setEditingBill(null);
+                addNotification('Bill updated successfully', 'success');
             }
         } else {
             const { error } = await supabase
                 .from('bills')
                 .insert([{ ...dataToSubmit, user_id: user.id }]);
 
-            if (error) console.error('Error adding bill:', error);
-            else {
+            if (error) {
+                console.error('Error adding bill:', error);
+                addNotification('Error adding bill', 'error');
+            } else {
                 fetchBills();
                 setNewBill({
                     name: '',
@@ -82,6 +108,7 @@ const BillsPage = ({ user }) => {
                     status: 'unpaid',
                     paid_date: null
                 });
+                addNotification('Bill added successfully', 'success');
             }
         }
     };
@@ -94,12 +121,12 @@ const BillsPage = ({ user }) => {
             .eq('id', id)
             .select();
 
-        if (error) console.error('Error updating bill status:', error);
-        else {
+        if (error) {
+            console.error('Error updating bill status:', error);
+            addNotification('Error updating bill status', 'error');
+        } else {
             fetchBills();
-            if (newStatus === 'paid') {
-                alert(`Bill marked as paid on ${new Date(data[0].paid_date).toLocaleDateString()}`);
-            }
+            addNotification(`Bill marked as ${newStatus}`, 'success');
         }
     };
 
@@ -109,8 +136,13 @@ const BillsPage = ({ user }) => {
             .delete()
             .eq('id', id);
 
-        if (error) console.error('Error deleting bill:', error);
-        else fetchBills();
+        if (error) {
+            console.error('Error deleting bill:', error);
+            addNotification('Error deleting bill', 'error');
+        } else {
+            fetchBills();
+            addNotification('Bill deleted successfully', 'success');
+        }
     };
 
     const startEditing = (bill) => {
