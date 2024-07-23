@@ -38,13 +38,20 @@ const BillsPage = ({ user }) => {
             setNewBill({ ...newBill, [name]: value });
         }
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const billData = editingBill ? editingBill : newBill;
+
+        // Only include paid_date if status is 'paid' and a date is provided
+        const dataToSubmit = {
+            ...billData,
+            paid_date: billData.status === 'paid' && billData.paid_date ? billData.paid_date : null
+        };
+
         if (editingBill) {
             const { error } = await supabase
                 .from('bills')
-                .update(editingBill)
+                .update(dataToSubmit)
                 .eq('id', editingBill.id);
 
             if (error) console.error('Error updating bill:', error);
@@ -55,7 +62,7 @@ const BillsPage = ({ user }) => {
         } else {
             const { error } = await supabase
                 .from('bills')
-                .insert([{ ...newBill, user_id: user.id }]);
+                .insert([{ ...dataToSubmit, user_id: user.id }]);
 
             if (error) console.error('Error adding bill:', error);
             else {
@@ -67,7 +74,8 @@ const BillsPage = ({ user }) => {
                     paymentUrl: '',
                     frequency: 'monthly',
                     category: 'Family',
-                    status: 'unpaid'
+                    status: 'unpaid',
+                    paid_date: null
                 });
             }
         }
@@ -75,13 +83,20 @@ const BillsPage = ({ user }) => {
 
     const toggleBillStatus = async (id, currentStatus) => {
         const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('bills')
             .update({ status: newStatus })
-            .eq('id', id);
+            .eq('id', id)
+            .select();
 
         if (error) console.error('Error updating bill status:', error);
-        else fetchBills();
+        else {
+            fetchBills();
+            // If the bill was marked as paid, show the paid date
+            if (newStatus === 'paid') {
+                alert(`Bill marked as paid on ${new Date(data[0].paid_date).toLocaleDateString()}`);
+            }
+        }
     };
 
     const deleteBill = async (id) => {
@@ -142,6 +157,13 @@ const BillsPage = ({ user }) => {
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                     required
+                />
+                <input
+                    type="date"
+                    name="paidDate"
+                    value={editingBill ? editingBill.paid_date : newBill.paid_date}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
                 />
                 <input
                     type="url"
