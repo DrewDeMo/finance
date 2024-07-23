@@ -1,7 +1,6 @@
-// File: /finance/src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { supabase } from './supabaseClient';
+import { supabase, getSession } from './supabaseClient';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import BillsPage from './pages/BillsPage';
@@ -13,8 +12,12 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const session = supabase.auth.session();
-    setUser(session?.user ?? null);
+    const fetchSession = async () => {
+      const session = await getSession();
+      setUser(session?.user ?? null);
+    };
+
+    fetchSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -24,7 +27,7 @@ function App() {
     );
 
     return () => {
-      authListener?.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
   }, []);
 
