@@ -12,9 +12,7 @@ const Navigation = () => {
         <nav className="bg-gray-800 p-4">
             <div className="container mx-auto flex justify-between items-center">
                 <Link to="/" className="flex items-center">
-                    <svg className="h-8 w-8 mr-2 text-white" fill="currentColor">
-                        <use xlinkHref="#d_lettermark_logo" />
-                    </svg>
+                    <img src="/assets/images/logo.svg" alt="FinanceApp Logo" className="h-8 w-8 mr-2 logo-svg" />
                     <span className="text-white font-bold text-xl">FinanceApp</span>
                 </Link>
                 <div className="flex items-center">

@@ -1,0 +1,18 @@
+/* File: /finance/src/components/logo.css */
+.logo-svg {
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+
+.logo-svg:hover {
+    transform: scale(1.1);
+    filter: brightness(0.8);
+}
+
+/* For dark backgrounds */
+.bg-gray-800 .logo-svg {
+    filter: brightness(0) invert(1);
+}
+
+.bg-gray-800 .logo-svg:hover {
+    filter: brightness(0) invert(1) brightness(0.8);
+}
