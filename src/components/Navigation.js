@@ -11,13 +11,20 @@ const Navigation = () => {
     return (
         <nav className="bg-gray-800 p-4">
             <div className="container mx-auto flex justify-between items-center">
-                <Link to="/" className="text-white font-bold">FinanceApp</Link>
-                <div>
-                    <Link to="/" className="text-white mr-4">Home</Link>
-                    <Link to="/bills" className="text-white mr-4">Bills</Link>
-                    <Link to="/calendar" className="text-white mr-4">Calendar</Link>
-                    <Link to="/analysis" className="text-white mr-4">Analysis</Link>
-                    <button onClick={handleLogout} className="text-white">Logout</button>
+                <Link to="/" className="flex items-center">
+                    <svg className="h-8 w-8 mr-2 text-white" fill="currentColor">
+                        <use xlinkHref="#d_lettermark_logo" />
+                    </svg>
+                    <span className="text-white font-bold text-xl">FinanceApp</span>
+                </Link>
+                <div className="flex items-center">
+                    <Link to="/" className="text-white mr-4 hover:text-gray-300">Home</Link>
+                    <Link to="/bills" className="text-white mr-4 hover:text-gray-300">Bills</Link>
+                    <Link to="/calendar" className="text-white mr-4 hover:text-gray-300">Calendar</Link>
+                    <Link to="/analysis" className="text-white mr-4 hover:text-gray-300">Analysis</Link>
+                    <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                        Logout
+                    </button>
                 </div>
             </div>
         </nav>
