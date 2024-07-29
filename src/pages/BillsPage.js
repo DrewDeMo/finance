@@ -96,7 +96,7 @@ const BillsPage = ({ user }) => {
                     console.error('Error updating bill:', error);
                     addNotification('Error updating bill', 'error');
                 } else {
-                    fetchBills();
+                    await fetchBills();
                     setEditingBill(null);
                     addNotification('Bill updated successfully', 'success');
                 }
@@ -110,7 +110,7 @@ const BillsPage = ({ user }) => {
                     console.error('Error adding bill:', error);
                     addNotification('Error adding bill', 'error');
                 } else {
-                    fetchBills();
+                    await fetchBills();
                     setNewBill({
                         name: '',
                         amount: '',
