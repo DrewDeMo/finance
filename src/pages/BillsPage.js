@@ -75,11 +75,13 @@ const BillsPage = ({ user }) => {
         }
 
         // Clear paymentUrl if paymentMethod is not 'url'
-        if (name === 'paymentMethod' && value !== 'url') {
-            if (editingBill) {
-                setEditingBill({ ...editingBill, paymentUrl: '' });
-            } else {
-                setNewBill({ ...newBill, paymentUrl: '' });
+        if (name === 'paymentMethod') {
+            if (value !== 'url') {
+                if (editingBill) {
+                    setEditingBill({ ...editingBill, paymentUrl: '' });
+                } else {
+                    setNewBill({ ...newBill, paymentUrl: '' });
+                }
             }
         }
     };
@@ -363,7 +365,7 @@ const BillsPage = ({ user }) => {
                     <option value="app">App</option>
                     <option value="mail">Mail</option>
                 </select>
-                {((editingBill && editingBill.paymentMethod === 'url') || (!editingBill && newBill.paymentMethod === 'url')) && (
+                {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
                     <input
                         type="url"
                         name="paymentUrl"
@@ -371,6 +373,7 @@ const BillsPage = ({ user }) => {
                         onChange={handleInputChange}
                         placeholder="Payment URL"
                         className="w-full p-2 border rounded"
+                        required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
                     />
                 )}
                 <select
