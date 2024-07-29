@@ -147,7 +147,8 @@ const BillsPage = ({ user }) => {
             } else {
                 const { error } = await supabase
                     .from('bills')
-                    .insert([{ ...dataToSubmit, user_id: user.id }]);
+                    .insert([{ ...dataToSubmit, user_id: user.id }])
+                    .single();
 
                 if (error) {
                     console.error('Error adding bill:', error);
@@ -366,7 +367,12 @@ const BillsPage = ({ user }) => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {bill.isAutomatic ? 'Yes' : 'No'}
+                                    <button
+                                        onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
+                                        className={`px-3 py-1 rounded-full text-xs font-medium ${bill.isAutomatic ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                                    >
+                                        {bill.isAutomatic ? 'Disable Auto Pay' : 'Enable Auto Pay'}
+                                    </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
