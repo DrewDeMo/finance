@@ -147,8 +147,7 @@ const BillsPage = ({ user }) => {
             } else {
                 const { error } = await supabase
                     .from('bills')
-                    .insert([{ ...dataToSubmit, user_id: user.id }])
-                    .single();
+                    .insert([{ ...dataToSubmit, user_id: user.id }]);
 
                 if (error) {
                     console.error('Error adding bill:', error);
@@ -177,7 +176,7 @@ const BillsPage = ({ user }) => {
 
     const toggleAutoPay = async (id, currentAutoPayStatus) => {
         const newAutoPayStatus = !currentAutoPayStatus;
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('bills')
             .update({ isAutomatic: newAutoPayStatus })
             .eq('id', id);
