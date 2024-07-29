@@ -5,6 +5,10 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+import { useNotification } from '../context/NotificationContext';
+
+const { addNotification } = useNotification();
+
 export const getSession = async () => {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
