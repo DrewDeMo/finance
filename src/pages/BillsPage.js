@@ -175,6 +175,22 @@ const BillsPage = ({ user }) => {
         }
     };
 
+    const toggleAutoPay = async (id, currentAutoPayStatus) => {
+        const newAutoPayStatus = !currentAutoPayStatus;
+        const { data, error } = await supabase
+            .from('bills')
+            .update({ isAutomatic: newAutoPayStatus })
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error updating auto pay status:', error);
+            addNotification('Error updating auto pay status', 'error');
+        } else {
+            fetchBills();
+            addNotification(`Auto pay status updated to ${newAutoPayStatus ? 'enabled' : 'disabled'}`, 'success');
+        }
+    };
+
     const toggleBillStatus = async (id, currentStatus) => {
         const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
         const { data, error } = await supabase
