@@ -78,7 +78,12 @@ const BillsPage = ({ user }) => {
             const session = await getSession();
             if (!session) {
                 addNotification('User not authenticated', 'error');
-                return;
+                await refreshSession();
+                const newSession = await getSession();
+                if (!newSession) {
+                    addNotification('User not authenticated even after refresh', 'error');
+                    return;
+                }
             }
 
             if (editingBill) {

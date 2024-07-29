@@ -9,6 +9,7 @@ export const getSession = async () => {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
     console.error('Error getting session:', error);
+    addNotification('Error getting session', 'error');
     return null;
   }
   return data.session;
@@ -18,6 +19,7 @@ export const refreshSession = async () => {
   const { data, error } = await supabase.auth.refreshSession();
   if (error) {
     console.error('Error refreshing session:', error);
+    addNotification('Error refreshing session', 'error');
     return null;
   }
   return data.session;
