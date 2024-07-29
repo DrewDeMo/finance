@@ -1,4 +1,3 @@
-// File: /finance/src/pages/CalendarPage.js
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -21,8 +20,9 @@ const CalendarPage = ({ user }) => {
             .select('*')
             .eq('user_id', user.id);
 
-        if (error) console.error('Error fetching bills:', error);
-        else {
+        if (error) {
+            console.error('Error fetching bills:', error);
+        } else {
             const calendarEvents = data.map(bill => ({
                 title: `${bill.name} - $${bill.amount}`,
                 start: new Date(bill.dueDate),
@@ -47,16 +47,19 @@ const CalendarPage = ({ user }) => {
     };
 
     return (
-        <div className="container mx-auto p-4 h-screen">
-            <h1 className="text-2xl font-bold mb-4">Calendar</h1>
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: 'calc(100vh - 100px)' }}
-                eventPropGetter={eventStyleGetter}
-            />
+        <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">Bill Calendar</h1>
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <Calendar
+                    localizer={localizer}
+                    events={events}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: 'calc(100vh - 200px)' }}
+                    eventPropGetter={eventStyleGetter}
+                    className="rounded-lg overflow-hidden"
+                />
+            </div>
         </div>
     );
 };
