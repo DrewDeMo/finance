@@ -192,22 +192,6 @@ const BillsPage = ({ user }) => {
         }
     };
 
-    const toggleAutoPay = async (id, currentAutoPayStatus) => {
-        const newAutoPayStatus = !currentAutoPayStatus;
-        const { data, error } = await supabase
-            .from('bills')
-            .update({ isAutomatic: newAutoPayStatus })
-            .eq('id', id);
-
-        if (error) {
-            console.error('Error updating auto pay status:', error);
-            console.error('Error details:', error.message);
-            addNotification('Error updating auto pay status', 'error');
-        } else {
-            fetchBills();
-            addNotification(`Auto pay status updated to ${newAutoPayStatus ? 'enabled' : 'disabled'}`, 'success');
-        }
-    };
 
     const deleteBill = async (id) => {
         const { error } = await supabase
@@ -345,7 +329,14 @@ const BillsPage = ({ user }) => {
                             <td>{new Date(bill.dueDate).toLocaleDateString()}</td>
                             <td>{bill.subcategory}</td>
                             <td>{bill.status}</td>
-                            <td>{bill.isAutomatic ? 'Yes' : 'No'}</td>
+                            <td>
+                                <button
+                                    onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
+                                    className={`px-2 py-1 rounded ${bill.isAutomatic ? 'bg-green-500' : 'bg-yellow-500'} text-white mr-2`}
+                                >
+                                    {bill.isAutomatic ? 'Auto Pay On' : 'Auto Pay Off'}
+                                </button>
+                            </td>
                             <td>
                                 <button
                                     onClick={() => toggleBillStatus(bill.id, bill.status)}
@@ -451,16 +442,6 @@ const BillsPage = ({ user }) => {
                     <option value="Insurance">Insurance</option>
                     <option value="Other">Other</option>
                 </select>
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        name="isAutomatic"
-                        checked={editingBill ? editingBill.isAutomatic : newBill.isAutomatic}
-                        onChange={handleInputChange}
-                        className="mr-2"
-                    />
-                    <label htmlFor="isAutomatic">Automatic Payment</label>
-                </div>
                 <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
                     {editingBill ? 'Update Bill' : 'Add Bill'}
                 </button>
