@@ -1,7 +1,7 @@
 // src/pages/BillsPage.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNotification } from '../context/NotificationContext';
+import { useNotification } from './context/NotificationContext';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
