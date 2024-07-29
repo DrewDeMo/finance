@@ -1,7 +1,7 @@
 // src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { supabase, createSupabaseHandlers } from './supabaseClient';
+import { supabase, getSession } from './supabaseClient';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,7 +15,6 @@ import Navigation from './components/Navigation';
 function AppContent() {
   const [user, setUser] = useState(null);
   const { addNotification } = useNotification();
-  const { getSession } = createSupabaseHandlers();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -35,7 +34,7 @@ function AppContent() {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [getSession]);
+  }, []);
 
   return (
     <Router>
