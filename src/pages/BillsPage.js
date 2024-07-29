@@ -202,7 +202,10 @@ const BillsPage = ({ user }) => {
     };
 
     const sortedBills = useMemo(() => {
-        let sortableBills = [...bills].filter(bill => bill.category === activeCategory);
+        let sortableBills = [...bills];
+        if (activeCategory !== 'All') {
+            sortableBills = sortableBills.filter(bill => bill.category === activeCategory);
+        }
         if (filterStatus !== 'all') {
             sortableBills = sortableBills.filter(bill => bill.status === filterStatus);
         }
@@ -246,7 +249,7 @@ const BillsPage = ({ user }) => {
             <h1 className="text-2xl font-bold mb-4">Bills</h1>
 
             <div className="mb-4 flex space-x-4">
-                {['Family', 'Gina', 'Drew'].map(category => (
+                {['All', 'Family', 'Gina', 'Drew'].map(category => (
                     <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
