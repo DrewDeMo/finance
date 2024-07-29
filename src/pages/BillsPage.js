@@ -197,11 +197,11 @@ const BillsPage = ({ user }) => {
         const { data, error } = await supabase
             .from('bills')
             .update({ isAutomatic: newAutoPayStatus })
-            .eq('id', id)
-            .select();
+            .eq('id', id);
 
         if (error) {
             console.error('Error updating auto pay status:', error);
+            console.error('Error details:', error.message);
             addNotification('Error updating auto pay status', 'error');
         } else {
             fetchBills();
