@@ -6,7 +6,19 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const getSession = async () => {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
-  return data.session
-}
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
+  return data.session;
+};
+
+export const refreshSession = async () => {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error) {
+    console.error('Error refreshing session:', error);
+    return null;
+  }
+  return data.session;
+};

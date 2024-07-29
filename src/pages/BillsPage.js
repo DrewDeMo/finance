@@ -74,43 +74,54 @@ const BillsPage = ({ user }) => {
             paid_date: billData.status === 'paid' && billData.paid_date ? billData.paid_date : null
         };
 
-        if (editingBill) {
-            const { error } = await supabase
-                .from('bills')
-                .update(dataToSubmit)
-                .eq('id', editingBill.id);
-
-            if (error) {
-                console.error('Error updating bill:', error);
-                addNotification('Error updating bill', 'error');
-            } else {
-                fetchBills();
-                setEditingBill(null);
-                addNotification('Bill updated successfully', 'success');
+        try {
+            const session = await getSession();
+            if (!session) {
+                addNotification('User not authenticated', 'error');
+                return;
             }
-        } else {
-            const { error } = await supabase
-                .from('bills')
-                .insert([{ ...dataToSubmit, user_id: user.id }])
-                .single();
 
-            if (error) {
-                console.error('Error adding bill:', error);
-                addNotification('Error adding bill', 'error');
+            if (editingBill) {
+                const { error } = await supabase
+                    .from('bills')
+                    .update(dataToSubmit)
+                    .eq('id', editingBill.id);
+
+                if (error) {
+                    console.error('Error updating bill:', error);
+                    addNotification('Error updating bill', 'error');
+                } else {
+                    fetchBills();
+                    setEditingBill(null);
+                    addNotification('Bill updated successfully', 'success');
+                }
             } else {
-                fetchBills();
-                setNewBill({
-                    name: '',
-                    amount: '',
-                    dueDate: '',
-                    paymentUrl: '',
-                    frequency: 'monthly',
-                    subcategory: '',
-                    status: 'unpaid',
-                    paid_date: null
-                });
-                addNotification('Bill added successfully', 'success');
+                const { error } = await supabase
+                    .from('bills')
+                    .insert([{ ...dataToSubmit, user_id: user.id }])
+                    .single();
+
+                if (error) {
+                    console.error('Error adding bill:', error);
+                    addNotification('Error adding bill', 'error');
+                } else {
+                    fetchBills();
+                    setNewBill({
+                        name: '',
+                        amount: '',
+                        dueDate: '',
+                        paymentUrl: '',
+                        frequency: 'monthly',
+                        subcategory: '',
+                        status: 'unpaid',
+                        paid_date: null
+                    });
+                    addNotification('Bill added successfully', 'success');
+                }
             }
+        } catch (error) {
+            console.error('Error in handleSubmit:', error);
+            addNotification('Error processing bill', 'error');
         }
     };
 
