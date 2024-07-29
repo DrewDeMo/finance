@@ -4,110 +4,7 @@ import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 
 const BillsPage = ({ user }) => {
-    const [bills, setBills] = useState([]);
-    const [editingBill, setEditingBill] = useState({
-        name: '',
-        amount: '',
-        dueDate: '',
-        paymentUrl: '',
-        frequency: 'monthly',
-        subcategory: '',
-        status: 'unpaid',
-        paid_date: null,
-        paymentMethod: 'url',
-        isAutomatic: false
-    });
-    const [newBill, setNewBill] = useState({
-        name: '',
-        amount: '',
-        dueDate: '',
-        paymentUrl: '',
-        frequency: 'monthly',
-        category: 'Family',
-        subcategory: '',
-        status: 'unpaid',
-        paid_date: null,
-        paymentMethod: 'url',
-        isAutomatic: false
-    });
-    const [activeCategory, setActiveCategory] = useState('Family');
-    const [sortConfig, setSortConfig] = useState({ key: 'dueDate', direction: 'ascending' });
-    const [filterStatus, setFilterStatus] = useState('all');
-    const { addNotification } = useNotification();
-
-    useEffect(() => {
-        fetchBills();
-    }, [user]);
-
-    const fetchBills = async () => {
-        const { data, error } = await supabase
-            .from('bills')
-            .select('*')
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Error fetching bills:', error);
-            addNotification('Error fetching bills', 'error');
-        } else {
-            setBills(data);
-            checkBillsStatus(data);
-        }
-    };
-
-    const checkBillsStatus = (bills) => {
-        const today = new Date();
-        const updatedBills = bills.map(bill => {
-            const dueDate = new Date(bill.dueDate);
-            if (bill.isAutomatic && today >= dueDate && bill.status === 'unpaid') {
-                return { ...bill, status: 'paid', paid_date: today.toISOString() };
-            }
-            return bill;
-        });
-
-        // Update any changed bills in the database
-        updatedBills.forEach(async (bill) => {
-            if (bill.status !== bills.find(b => b.id === bill.id).status) {
-                await supabase
-                    .from('bills')
-                    .update({ status: bill.status, paid_date: bill.paid_date })
-                    .eq('id', bill.id);
-            }
-        });
-
-        setBills(updatedBills);
-
-        const upcomingBills = updatedBills.filter(bill => {
-            const dueDate = new Date(bill.dueDate);
-            const timeDiff = dueDate.getTime() - today.getTime();
-            const daysDiff = timeDiff / (1000 * 3600 * 24);
-            return daysDiff <= 3 && daysDiff > 0 && bill.status === 'unpaid';
-        });
-
-        upcomingBills.forEach(bill => {
-            addNotification(`${bill.name} is due in ${Math.ceil((new Date(bill.dueDate) - today) / (1000 * 60 * 60 * 24))} days`, 'warning');
-        });
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        const newValue = type === 'checkbox' ? checked : value;
-        if (editingBill) {
-            setEditingBill({ ...editingBill, [name]: newValue });
-        } else {
-            setNewBill({ ...newBill, [name]: newValue });
-        }
-
-        // Clear paymentUrl if paymentMethod is not 'url'
-        if (name === 'paymentMethod') {
-            if (value !== 'url') {
-                if (editingBill) {
-                    setEditingBill({ ...editingBill, paymentUrl: '' });
-                } else {
-                    setNewBill({ ...newBill, paymentUrl: '' });
-                }
-            }
-        }
-    };
+    // ... (keep all the existing state and functions)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -116,7 +13,8 @@ const BillsPage = ({ user }) => {
         const dataToSubmit = {
             ...billData,
             category: activeCategory,
-            paid_date: billData.status === 'paid' && billData.paid_date ? billData.paid_date : null
+            paid_date: billData.status === 'paid' && billData.paid_date ? billData.paid_date : null,
+            isAutomatic: billData.isAutomatic // Ensure isAutomatic is included in the data
         };
 
         try {
@@ -131,10 +29,11 @@ const BillsPage = ({ user }) => {
             }
 
             if (editingBill) {
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('bills')
                     .update(dataToSubmit)
-                    .eq('id', editingBill.id);
+                    .eq('id', editingBill.id)
+                    .select();
 
                 if (error) {
                     console.error('Error updating bill:', error);
@@ -145,10 +44,10 @@ const BillsPage = ({ user }) => {
                     addNotification('Bill updated successfully', 'success');
                 }
             } else {
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('bills')
                     .insert([{ ...dataToSubmit, user_id: user.id }])
-                    .single();
+                    .select();
 
                 if (error) {
                     console.error('Error adding bill:', error);
@@ -175,132 +74,49 @@ const BillsPage = ({ user }) => {
         }
     };
 
-    const toggleBillStatus = async (id, currentStatus) => {
-        const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
-        const { data, error } = await supabase
-            .from('bills')
-            .update({ status: newStatus, paid_date: newStatus === 'paid' ? new Date().toISOString() : null })
-            .eq('id', id)
-            .select();
-
-        if (error) {
-            console.error('Error updating bill status:', error);
-            addNotification('Error updating bill status', 'error');
-        } else {
-            fetchBills();
-            addNotification(`Bill marked as ${newStatus}`, 'success');
-        }
-    };
-
-    const deleteBill = async (id) => {
-        const { error } = await supabase
-            .from('bills')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            console.error('Error deleting bill:', error);
-            addNotification('Error deleting bill', 'error');
-        } else {
-            fetchBills();
-            addNotification('Bill deleted successfully', 'success');
-        }
-    };
-
-    const startEditing = (bill) => {
-        setEditingBill(bill);
-        setNewBill(bill);
-        setActiveCategory(bill.category);
-    };
-
-    const cancelEditing = () => {
-        setEditingBill(null);
-        setNewBill({
-            name: '',
-            amount: '',
-            dueDate: '',
-            paymentUrl: '',
-            frequency: 'monthly',
-            subcategory: '',
-            status: 'unpaid',
-            paid_date: null,
-            isAutomatic: false
-        });
-    };
-
-    const sortedBills = useMemo(() => {
-        let sortableBills = [...bills];
-        if (activeCategory !== 'All') {
-            sortableBills = sortableBills.filter(bill => bill.category === activeCategory);
-        }
-        if (filterStatus !== 'all') {
-            sortableBills = sortableBills.filter(bill => bill.status === filterStatus);
-        }
-        sortableBills.sort((a, b) => {
-            if (a[sortConfig.key] < b[sortConfig.key]) {
-                return sortConfig.direction === 'ascending' ? -1 : 1;
-            }
-            if (a[sortConfig.key] > b[sortConfig.key]) {
-                return sortConfig.direction === 'ascending' ? 1 : -1;
-            }
-            return 0;
-        });
-        return sortableBills;
-    }, [bills, activeCategory, sortConfig, filterStatus]);
-
-    const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
-
-    const summarizeBills = (bills) => {
-        const summary = bills.reduce((acc, bill) => {
-            acc.totalAmount += parseFloat(bill.amount);
-            acc.paidAmount += bill.status === 'paid' ? parseFloat(bill.amount) : 0;
-            acc.unpaidAmount += bill.status === 'unpaid' ? parseFloat(bill.amount) : 0;
-            return acc;
-        }, { totalAmount: 0, paidAmount: 0, unpaidAmount: 0 });
-        summary.totalAmount = summary.totalAmount.toFixed(2);
-        summary.paidAmount = summary.paidAmount.toFixed(2);
-        summary.unpaidAmount = summary.unpaidAmount.toFixed(2);
-        return summary;
-    };
-
-    const billSummary = summarizeBills(sortedBills);
+    // ... (keep all other existing functions)
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Bills</h1>
+        <div className="container mx-auto p-4 max-w-6xl">
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills</h1>
 
-            <div className="mb-4 flex space-x-4">
+            <div className="mb-6 flex space-x-2">
                 {['All', 'Family', 'Gina', 'Drew'].map(category => (
                     <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`px-4 py-2 rounded ${activeCategory === category ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                        className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                     >
                         {category}'s Bills
                     </button>
                 ))}
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">{activeCategory}'s Bills</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">{activeCategory}'s Bills</h2>
 
-            <div className="mb-4 p-4 bg-gray-100 rounded">
-                <h3 className="font-bold mb-2">Summary</h3>
-                <p>Total Amount: ${billSummary.totalAmount}</p>
-                <p>Paid Amount: ${billSummary.paidAmount}</p>
-                <p>Unpaid Amount: ${billSummary.unpaidAmount}</p>
+            <div className="mb-6 p-4 bg-white rounded-lg shadow-md">
+                <h3 className="font-bold mb-3 text-lg text-gray-800">Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                    <div>
+                        <p className="text-sm text-gray-600">Total Amount</p>
+                        <p className="text-xl font-semibold text-gray-800">${billSummary.totalAmount}</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Paid Amount</p>
+                        <p className="text-xl font-semibold text-green-600">${billSummary.paidAmount}</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600">Unpaid Amount</p>
+                        <p className="text-xl font-semibold text-red-600">${billSummary.unpaidAmount}</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 flex justify-between items-center">
                 <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="p-2 border rounded"
+                    className="p-2 border rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="all">All Bills</option>
                     <option value="paid">Paid Bills</option>
@@ -308,145 +124,159 @@ const BillsPage = ({ user }) => {
                 </select>
             </div>
 
-            <table className="w-full mb-8">
-                <thead>
-                    <tr>
-                        <th onClick={() => requestSort('name')} className="cursor-pointer">Name</th>
-                        <th onClick={() => requestSort('amount')} className="cursor-pointer">Amount</th>
-                        <th onClick={() => requestSort('dueDate')} className="cursor-pointer">Due Date</th>
-                        <th onClick={() => requestSort('subcategory')} className="cursor-pointer">Subcategory</th>
-                        <th onClick={() => requestSort('status')} className="cursor-pointer">Status</th>
-                        <th onClick={() => requestSort('isAutomatic')} className="cursor-pointer">Automatic</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedBills.map((bill) => (
-                        <tr key={bill.id} className="border-b">
-                            <td>{bill.name}</td>
-                            <td>${bill.amount}</td>
-                            <td>{new Date(bill.dueDate).toLocaleDateString()}</td>
-                            <td>{bill.subcategory}</td>
-                            <td>{bill.status}</td>
-                            <td>{bill.isAutomatic ? 'Yes' : 'No'}</td>
-                            <td>
-                                <button
-                                    onClick={() => toggleBillStatus(bill.id, bill.status)}
-                                    className={`px-2 py-1 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'} text-white mr-2`}
-                                >
-                                    {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
-                                </button>
-                                <button
-                                    onClick={() => startEditing(bill)}
-                                    className="px-2 py-1 rounded bg-yellow-500 text-white mr-2"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => deleteBill(bill.id)}
-                                    className="px-2 py-1 rounded bg-red-700 text-white"
-                                >
-                                    Delete
-                                </button>
-                            </td>
+            <div className="overflow-x-auto">
+                <table className="w-full mb-8 bg-white rounded-lg shadow-md">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th onClick={() => requestSort('name')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Name</th>
+                            <th onClick={() => requestSort('amount')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Amount</th>
+                            <th onClick={() => requestSort('dueDate')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Due Date</th>
+                            <th onClick={() => requestSort('subcategory')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Subcategory</th>
+                            <th onClick={() => requestSort('status')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Status</th>
+                            <th onClick={() => requestSort('isAutomatic')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">Automatic</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                        {sortedBills.map((bill) => (
+                            <tr key={bill.id} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bill.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${bill.amount}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bill.subcategory}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {bill.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bill.isAutomatic ? 'Yes' : 'No'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button
+                                        onClick={() => toggleBillStatus(bill.id, bill.status)}
+                                        className={`px-3 py-1 rounded-full text-xs font-medium mr-2 ${bill.status === 'paid' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white transition-colors duration-200`}
+                                    >
+                                        {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                    </button>
+                                    <button
+                                        onClick={() => startEditing(bill)}
+                                        className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white mr-2 transition-colors duration-200"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => deleteBill(bill.id)}
+                                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-700 hover:bg-red-800 text-white transition-colors duration-200"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-            <h3 className="text-lg font-semibold mb-2">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                    type="text"
-                    name="name"
-                    value={editingBill ? editingBill.name : newBill.name}
-                    onChange={handleInputChange}
-                    placeholder="Bill Name"
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <input
-                    type="number"
-                    name="amount"
-                    value={editingBill ? editingBill.amount : newBill.amount}
-                    onChange={handleInputChange}
-                    placeholder="Amount"
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <input
-                    type="date"
-                    name="dueDate"
-                    value={editingBill ? editingBill.dueDate : newBill.dueDate}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <select
-                    name="paymentMethod"
-                    value={editingBill ? editingBill.paymentMethod : newBill.paymentMethod}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="url">Payment URL</option>
-                    <option value="app">App</option>
-                    <option value="mail">Mail</option>
-                </select>
-                {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
-                    <input
-                        type="url"
-                        name="paymentUrl"
-                        value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
-                        onChange={handleInputChange}
-                        placeholder="Payment URL"
-                        className="w-full p-2 border rounded"
-                        required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
-                    />
-                )}
-                <select
-                    name="frequency"
-                    value={editingBill ? editingBill.frequency : newBill.frequency}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="monthly">Monthly</option>
-                    <option value="bi-monthly">Bi-Monthly</option>
-                    <option value="one-time">One-Time</option>
-                </select>
-                <select
-                    name="subcategory"
-                    value={editingBill ? editingBill.subcategory : newBill.subcategory}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="">Select Subcategory</option>
-                    <option value="Heating">Heating</option>
-                    <option value="Food">Food</option>
-                    <option value="Electricity">Electricity</option>
-                    <option value="Internet">Internet</option>
-                    <option value="Phone">Phone</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Other">Other</option>
-                </select>
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        name="isAutomatic"
-                        checked={editingBill ? editingBill.isAutomatic : newBill.isAutomatic}
-                        onChange={handleInputChange}
-                        className="mr-2"
-                    />
-                    <label htmlFor="isAutomatic">Automatic Payment</label>
-                </div>
-                <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-                    {editingBill ? 'Update Bill' : 'Add Bill'}
-                </button>
-                {editingBill && (
-                    <button type="button" onClick={cancelEditing} className="w-full p-2 bg-gray-500 text-white rounded">
-                        Cancel Editing
-                    </button>
-                )}
-            </form>
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input
+                            type="text"
+                            name="name"
+                            value={editingBill ? editingBill.name : newBill.name}
+                            onChange={handleInputChange}
+                            placeholder="Bill Name"
+                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                        <input
+                            type="number"
+                            name="amount"
+                            value={editingBill ? editingBill.amount : newBill.amount}
+                            onChange={handleInputChange}
+                            placeholder="Amount"
+                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                        <input
+                            type="date"
+                            name="dueDate"
+                            value={editingBill ? editingBill.dueDate : newBill.dueDate}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                        <select
+                            name="paymentMethod"
+                            value={editingBill ? editingBill.paymentMethod : newBill.paymentMethod}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="url">Payment URL</option>
+                            <option value="app">App</option>
+                            <option value="mail">Mail</option>
+                        </select>
+                    </div>
+                    {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
+                        <input
+                            type="url"
+                            name="paymentUrl"
+                            value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
+                            onChange={handleInputChange}
+                            placeholder="Payment URL"
+                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
+                        />
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select
+                            name="frequency"
+                            value={editingBill ? editingBill.frequency : newBill.frequency}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="monthly">Monthly</option>
+                            <option value="bi-monthly">Bi-Monthly</option>
+                            <option value="one-time">One-Time</option>
+                        </select>
+                        <select
+                            name="subcategory"
+                            value={editingBill ? editingBill.subcategory : newBill.subcategory}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">Select Subcategory</option>
+                            <option value="Heating">Heating</option>
+                            <option value="Food">Food</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Phone">Phone</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            name="isAutomatic"
+                            checked={editingBill ? editingBill.isAutomatic : newBill.isAutomatic}
+                            onChange={handleInputChange}
+                            className="mr-2 focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <label htmlFor="isAutomatic" className="text-sm text-gray-700">Automatic Payment</label>
+                    </div>
+                    <div className="flex space-x-4">
+                        <button type="submit" className="flex-1 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            {editingBill ? 'Update Bill' : 'Add Bill'}
+                        </button>
+                        {editingBill && (
+                            <button type="button" onClick={cancelEditing} className="flex-1 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                Cancel Editing
+                            </button>
+                        )}
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
