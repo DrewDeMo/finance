@@ -91,7 +91,8 @@ const BillsPage = ({ user }) => {
         } else {
             const { error } = await supabase
                 .from('bills')
-                .insert([{ ...dataToSubmit, user_id: user.id }]);
+                .insert([{ ...dataToSubmit, user_id: user.id }])
+                .single();
 
             if (error) {
                 console.error('Error adding bill:', error);
