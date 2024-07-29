@@ -192,6 +192,23 @@ const BillsPage = ({ user }) => {
         }
     };
 
+    const toggleAutoPay = async (id, currentAutoPayStatus) => {
+        const newAutoPayStatus = !currentAutoPayStatus;
+        const { data, error } = await supabase
+            .from('bills')
+            .update({ isAutomatic: newAutoPayStatus })
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            console.error('Error updating auto pay status:', error);
+            addNotification('Error updating auto pay status', 'error');
+        } else {
+            fetchBills();
+            addNotification(`Auto pay status updated to ${newAutoPayStatus ? 'enabled' : 'disabled'}`, 'success');
+        }
+    };
+
     const deleteBill = async (id) => {
         const { error } = await supabase
             .from('bills')
@@ -335,6 +352,12 @@ const BillsPage = ({ user }) => {
                                     className={`px-2 py-1 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'} text-white mr-2`}
                                 >
                                     {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                </button>
+                                <button
+                                    onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
+                                    className={`px-2 py-1 rounded ${bill.isAutomatic ? 'bg-green-500' : 'bg-yellow-500'} text-white mr-2`}
+                                >
+                                    {bill.isAutomatic ? 'Auto Pay On' : 'Auto Pay Off'}
                                 </button>
                                 <button
                                     onClick={() => startEditing(bill)}
