@@ -97,9 +97,9 @@ const BillsPage = ({ user }) => {
             setNewBill({ ...newBill, [name]: newValue });
         }
 
-        // Clear paymentUrl if paymentMethod is not 'url'
+        // Clear paymentUrl if paymentMethod is 'app'
         if (name === 'paymentMethod') {
-            if (value !== 'url') {
+            if (value === 'app') {
                 if (editingBill) {
                     setEditingBill({ ...editingBill, paymentUrl: '' });
                 } else {
