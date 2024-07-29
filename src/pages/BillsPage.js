@@ -14,7 +14,8 @@ const BillsPage = ({ user }) => {
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentMethod: 'url'
+        paymentMethod: 'url',
+        isAutomatic: false
     });
     const [newBill, setNewBill] = useState({
         name: '',
@@ -26,7 +27,8 @@ const BillsPage = ({ user }) => {
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentMethod: 'url'
+        paymentMethod: 'url',
+        isAutomatic: false
     });
     const [activeCategory, setActiveCategory] = useState('Family');
     const [sortConfig, setSortConfig] = useState({ key: 'dueDate', direction: 'ascending' });
@@ -48,13 +50,33 @@ const BillsPage = ({ user }) => {
             addNotification('Error fetching bills', 'error');
         } else {
             setBills(data);
-            checkUpcomingBills(data);
+            checkBillsStatus(data);
         }
     };
 
-    const checkUpcomingBills = (bills) => {
+    const checkBillsStatus = (bills) => {
         const today = new Date();
-        const upcomingBills = bills.filter(bill => {
+        const updatedBills = bills.map(bill => {
+            const dueDate = new Date(bill.dueDate);
+            if (bill.isAutomatic && today >= dueDate && bill.status === 'unpaid') {
+                return { ...bill, status: 'paid', paid_date: today.toISOString() };
+            }
+            return bill;
+        });
+
+        // Update any changed bills in the database
+        updatedBills.forEach(async (bill) => {
+            if (bill.status !== bills.find(b => b.id === bill.id).status) {
+                await supabase
+                    .from('bills')
+                    .update({ status: bill.status, paid_date: bill.paid_date })
+                    .eq('id', bill.id);
+            }
+        });
+
+        setBills(updatedBills);
+
+        const upcomingBills = updatedBills.filter(bill => {
             const dueDate = new Date(bill.dueDate);
             const timeDiff = dueDate.getTime() - today.getTime();
             const daysDiff = timeDiff / (1000 * 3600 * 24);
@@ -67,11 +89,12 @@ const BillsPage = ({ user }) => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
+        const newValue = type === 'checkbox' ? checked : value;
         if (editingBill) {
-            setEditingBill({ ...editingBill, [name]: value });
+            setEditingBill({ ...editingBill, [name]: newValue });
         } else {
-            setNewBill({ ...newBill, [name]: value });
+            setNewBill({ ...newBill, [name]: newValue });
         }
 
         // Clear paymentUrl if paymentMethod is not 'url'
@@ -140,7 +163,8 @@ const BillsPage = ({ user }) => {
                         frequency: 'monthly',
                         subcategory: '',
                         status: 'unpaid',
-                        paid_date: null
+                        paid_date: null,
+                        isAutomatic: false
                     });
                     addNotification('Bill added successfully', 'success');
                 }
@@ -199,7 +223,8 @@ const BillsPage = ({ user }) => {
             frequency: 'monthly',
             subcategory: '',
             status: 'unpaid',
-            paid_date: null
+            paid_date: null,
+            isAutomatic: false
         });
     };
 
@@ -291,6 +316,7 @@ const BillsPage = ({ user }) => {
                         <th onClick={() => requestSort('dueDate')} className="cursor-pointer">Due Date</th>
                         <th onClick={() => requestSort('subcategory')} className="cursor-pointer">Subcategory</th>
                         <th onClick={() => requestSort('status')} className="cursor-pointer">Status</th>
+                        <th onClick={() => requestSort('isAutomatic')} className="cursor-pointer">Automatic</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -302,6 +328,7 @@ const BillsPage = ({ user }) => {
                             <td>{new Date(bill.dueDate).toLocaleDateString()}</td>
                             <td>{bill.subcategory}</td>
                             <td>{bill.status}</td>
+                            <td>{bill.isAutomatic ? 'Yes' : 'No'}</td>
                             <td>
                                 <button
                                     onClick={() => toggleBillStatus(bill.id, bill.status)}
@@ -401,6 +428,16 @@ const BillsPage = ({ user }) => {
                     <option value="Insurance">Insurance</option>
                     <option value="Other">Other</option>
                 </select>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="isAutomatic"
+                        checked={editingBill ? editingBill.isAutomatic : newBill.isAutomatic}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                    />
+                    <label htmlFor="isAutomatic">Automatic Payment</label>
+                </div>
                 <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
                     {editingBill ? 'Update Bill' : 'Add Bill'}
                 </button>
