@@ -1,6 +1,6 @@
 // src/pages/BillsPage.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 
 const BillsPage = ({ user }) => {
