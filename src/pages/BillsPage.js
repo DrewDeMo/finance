@@ -289,35 +289,48 @@ const BillsPage = ({ user }) => {
     const billSummary = summarizeBills(sortedBills);
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Bills</h1>
+        <div className="container mx-auto p-6 bg-gray-50">
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills Management</h1>
 
-            <div className="mb-4 flex space-x-4">
+            <div className="mb-6 flex space-x-4">
                 {['All', 'Family', 'Gina', 'Drew'].map(category => (
                     <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`px-4 py-2 rounded ${activeCategory === category ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                        className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
                     >
                         {category}'s Bills
                     </button>
                 ))}
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">{activeCategory}'s Bills</h2>
-
-            <div className="mb-4 p-4 bg-gray-100 rounded">
-                <h3 className="font-bold mb-2">Summary</h3>
-                <p>Total Amount: ${billSummary.totalAmount}</p>
-                <p>Paid Amount: ${billSummary.paidAmount}</p>
-                <p>Unpaid Amount: ${billSummary.unpaidAmount}</p>
+            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold mb-4 text-gray-700">Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-blue-100 rounded-lg">
+                        <p className="text-sm text-blue-600 font-medium">Total Amount</p>
+                        <p className="text-2xl font-bold text-blue-800">${billSummary.totalAmount}</p>
+                    </div>
+                    <div className="p-4 bg-green-100 rounded-lg">
+                        <p className="text-sm text-green-600 font-medium">Paid Amount</p>
+                        <p className="text-2xl font-bold text-green-800">${billSummary.paidAmount}</p>
+                    </div>
+                    <div className="p-4 bg-red-100 rounded-lg">
+                        <p className="text-sm text-red-600 font-medium">Unpaid Amount</p>
+                        <p className="text-2xl font-bold text-red-800">${billSummary.unpaidAmount}</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6 flex justify-between items-center">
+                <h2 className="text-2xl font-semibold text-gray-700">{activeCategory}'s Bills</h2>
                 <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="p-2 border rounded"
+                    className="p-2 border rounded-md bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                     <option value="all">All Bills</option>
                     <option value="paid">Paid Bills</option>
@@ -325,148 +338,171 @@ const BillsPage = ({ user }) => {
                 </select>
             </div>
 
-            <table className="w-full mb-8">
-                <thead>
-                    <tr>
-                        <th onClick={() => requestSort('name')} className="cursor-pointer">Name</th>
-                        <th onClick={() => requestSort('amount')} className="cursor-pointer">Amount</th>
-                        <th onClick={() => requestSort('dueDate')} className="cursor-pointer">Due Date</th>
-                        <th onClick={() => requestSort('subcategory')} className="cursor-pointer">Subcategory</th>
-                        <th onClick={() => requestSort('status')} className="cursor-pointer">Status</th>
-                        <th onClick={() => requestSort('isAutomatic')} className="cursor-pointer">Automatic</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sortedBills.map((bill) => (
-                        <tr key={bill.id} className="border-b">
-                            <td>{bill.name}</td>
-                            <td>${bill.amount}</td>
-                            <td>{new Date(bill.dueDate).toLocaleDateString()}</td>
-                            <td>{bill.subcategory}</td>
-                            <td>{bill.status}</td>
-                            <td>
-                                <button
-                                    onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
-                                    className={`px-2 py-1 rounded ${bill.isAutomatic ? 'bg-green-500' : 'bg-yellow-500'} text-white mr-2`}
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+                <table className="w-full table-auto">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            {['Name', 'Amount', 'Due Date', 'Subcategory', 'Status', 'Automatic', 'Actions'].map((header) => (
+                                <th
+                                    key={header}
+                                    onClick={() => requestSort(header.toLowerCase())}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                 >
-                                    {bill.isAutomatic ? 'Auto Pay On' : 'Auto Pay Off'}
-                                </button>
-                            </td>
-                            <td>
-                                <button
-                                    onClick={() => toggleBillStatus(bill.id, bill.status)}
-                                    className={`px-2 py-1 rounded ${bill.status === 'paid' ? 'bg-green-500' : 'bg-red-500'} text-white mr-2`}
-                                >
-                                    {bill.status === 'paid' ? 'Paid' : 'Unpaid'}
-                                </button>
-                                <button
-                                    onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
-                                    className={`px-2 py-1 rounded ${bill.isAutomatic ? 'bg-green-500' : 'bg-yellow-500'} text-white mr-2`}
-                                >
-                                    {bill.isAutomatic ? 'Auto Pay On' : 'Auto Pay Off'}
-                                </button>
-                                <button
-                                    onClick={() => startEditing(bill)}
-                                    className="px-2 py-1 rounded bg-yellow-500 text-white mr-2"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => deleteBill(bill.id)}
-                                    className="px-2 py-1 rounded bg-red-700 text-white"
-                                >
-                                    Delete
-                                </button>
-                            </td>
+                                    {header}
+                                </th>
+                            ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                        {sortedBills.map((bill) => (
+                            <tr key={bill.id} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bill.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${bill.amount}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bill.subcategory}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {bill.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {bill.isAutomatic ? 'Yes' : 'No'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button
+                                        onClick={() => toggleBillStatus(bill.id, bill.status)}
+                                        className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                            }`}
+                                    >
+                                        {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+                                    </button>
+                                    <button
+                                        onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
+                                        className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.isAutomatic
+                                                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                                : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                                            }`}
+                                    >
+                                        {bill.isAutomatic ? 'Disable Auto' : 'Enable Auto'}
+                                    </button>
+                                    <button
+                                        onClick={() => startEditing(bill)}
+                                        className="mr-2 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => deleteBill(bill.id)}
+                                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-            <h3 className="text-lg font-semibold mb-2">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                    type="text"
-                    name="name"
-                    value={editingBill ? editingBill.name : newBill.name}
-                    onChange={handleInputChange}
-                    placeholder="Bill Name"
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <input
-                    type="number"
-                    name="amount"
-                    value={editingBill ? editingBill.amount : newBill.amount}
-                    onChange={handleInputChange}
-                    placeholder="Amount"
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <input
-                    type="date"
-                    name="dueDate"
-                    value={editingBill ? editingBill.dueDate : newBill.dueDate}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                />
-                <select
-                    name="paymentMethod"
-                    value={editingBill ? editingBill.paymentMethod : newBill.paymentMethod}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="url">Payment URL</option>
-                    <option value="app">App</option>
-                    <option value="mail">Mail</option>
-                </select>
-                {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
-                    <input
-                        type="url"
-                        name="paymentUrl"
-                        value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
-                        onChange={handleInputChange}
-                        placeholder="Payment URL"
-                        className="w-full p-2 border rounded"
-                        required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
-                    />
-                )}
-                <select
-                    name="frequency"
-                    value={editingBill ? editingBill.frequency : newBill.frequency}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="monthly">Monthly</option>
-                    <option value="bi-monthly">Bi-Monthly</option>
-                    <option value="one-time">One-Time</option>
-                </select>
-                <select
-                    name="subcategory"
-                    value={editingBill ? editingBill.subcategory : newBill.subcategory}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="">Select Subcategory</option>
-                    <option value="Heating">Heating</option>
-                    <option value="Food">Food</option>
-                    <option value="Electricity">Electricity</option>
-                    <option value="Internet">Internet</option>
-                    <option value="Phone">Phone</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Other">Other</option>
-                </select>
-                <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-                    {editingBill ? 'Update Bill' : 'Add Bill'}
-                </button>
-                {editingBill && (
-                    <button type="button" onClick={cancelEditing} className="w-full p-2 bg-gray-500 text-white rounded">
-                        Cancel Editing
-                    </button>
-                )}
-            </form>
+            <div className="mt-8 bg-white p-6 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-4 text-gray-700">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input
+                            type="text"
+                            name="name"
+                            value={editingBill ? editingBill.name : newBill.name}
+                            onChange={handleInputChange}
+                            placeholder="Bill Name"
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                        <input
+                            type="number"
+                            name="amount"
+                            value={editingBill ? editingBill.amount : newBill.amount}
+                            onChange={handleInputChange}
+                            placeholder="Amount"
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                        <input
+                            type="date"
+                            name="dueDate"
+                            value={editingBill ? editingBill.dueDate : newBill.dueDate}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        />
+                        <select
+                            name="paymentMethod"
+                            value={editingBill ? editingBill.paymentMethod : newBill.paymentMethod}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="url">Payment URL</option>
+                            <option value="app">App</option>
+                            <option value="mail">Mail</option>
+                        </select>
+                        {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
+                            <input
+                                type="url"
+                                name="paymentUrl"
+                                value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
+                                onChange={handleInputChange}
+                                placeholder="Payment URL"
+                                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
+                            />
+                        )}
+                        <select
+                            name="frequency"
+                            value={editingBill ? editingBill.frequency : newBill.frequency}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="monthly">Monthly</option>
+                            <option value="bi-monthly">Bi-Monthly</option>
+                            <option value="one-time">One-Time</option>
+                        </select>
+                        <select
+                            name="subcategory"
+                            value={editingBill ? editingBill.subcategory : newBill.subcategory}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Select Subcategory</option>
+                            <option value="Heating">Heating</option>
+                            <option value="Food">Food</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Phone">Phone</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                        {editingBill && (
+                            <button
+                                type="button"
+                                onClick={cancelEditing}
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+                        >
+                            {editingBill ? 'Update Bill' : 'Add Bill'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
