@@ -14,7 +14,9 @@ const Navigation = () => {
         <nav className="bg-gray-800 p-4">
             <div className="container mx-auto flex justify-between items-center">
                 <Link to="/" className="flex items-center">
-                    <DemaioloLogo className="icon w-8 h-8 mr-2" /> {/* Use the SVG component here */}
+                    <DemaioloLogo className="icon w-8 h-8 mr-2" /> {<svg class="icon">
+                        <use xlink:href="#demaiolo_logo"></use>
+                    </svg>}
                     <span className="text-white font-bold text-xl">FinanceApp</span>
                 </Link>
                 <div className="flex items-center">
