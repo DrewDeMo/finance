@@ -63,7 +63,12 @@ const BillsPage = ({ user }) => {
         for (const bill of recurringBills) {
             const dueDate = new Date(bill.dueDate);
             if (dueDate < today) {
-                const newBill = { ...bill, dueDate: nextMonth.toISOString() };
+                const nextDueDate = new Date(today.getFullYear(), today.getMonth() + 1, dueDate.getDate());
+                if (nextDueDate.getMonth() !== (today.getMonth() + 1) % 12) {
+                    // If the calculated date is not in the next month, set it to the last day of the next month
+                    nextDueDate.setDate(0);
+                }
+                const newBill = { ...bill, dueDate: nextDueDate.toISOString() };
                 await supabase.from('bills').insert([newBill]);
             }
         }
