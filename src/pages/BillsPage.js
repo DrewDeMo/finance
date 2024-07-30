@@ -49,16 +49,44 @@ const BillsPage = ({ user }) => {
             console.error('Error fetching bills:', error);
             addNotification('Error fetching bills', 'error');
         } else {
-            setBills(data);
-            checkBillsStatus(data);
+            const updatedBills = await handleRecurringBills(data);
+            setBills(updatedBills);
+            checkBillsStatus(updatedBills);
         }
+    };
+
+    const handleRecurringBills = async (bills) => {
+        const today = new Date();
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        const recurringBills = bills.filter(bill => bill.frequency === 'monthly');
+
+        for (const bill of recurringBills) {
+            const dueDate = new Date(bill.dueDate);
+            if (dueDate < today) {
+                const newBill = { ...bill, dueDate: nextMonth.toISOString() };
+                await supabase.from('bills').insert([newBill]);
+            }
+        }
+
+        const { data, error } = await supabase
+            .from('bills')
+            .select('*')
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error fetching updated bills:', error);
+            addNotification('Error fetching updated bills', 'error');
+            return bills;
+        }
+
+        return data;
     };
 
     const checkBillsStatus = (bills) => {
         const today = new Date();
         const updatedBills = bills.map(bill => {
             const dueDate = new Date(bill.dueDate);
-            if (bill.isAutomatic && today >= dueDate && bill.status === 'unpaid') {
+            if (bill.isAutomatic && today.toDateString() === dueDate.toDateString() && bill.status === 'unpaid') {
                 return { ...bill, status: 'paid', paid_date: today.toISOString() };
             }
             return bill;
