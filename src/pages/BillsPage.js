@@ -138,7 +138,7 @@ const BillsPage = ({ user }) => {
 
                 if (error) {
                     console.error('Error updating bill:', error);
-                    addNotification('Error updating bill', 'error');
+                    addNotification(`Error updating bill: ${error.message}`, 'error');
                 } else {
                     await fetchBills();
                     setEditingBill(null);
@@ -152,7 +152,7 @@ const BillsPage = ({ user }) => {
 
                 if (error) {
                     console.error('Error adding bill:', error);
-                    addNotification('Error adding bill', 'error');
+                    addNotification(`Error adding bill: ${error.message}`, 'error');
                 } else {
                     await fetchBills();
                     setNewBill({
@@ -171,7 +171,7 @@ const BillsPage = ({ user }) => {
             }
         } catch (error) {
             console.error('Error in handleSubmit:', error);
-            addNotification('Error processing bill', 'error');
+            addNotification(`Error processing bill: ${error.message}`, 'error');
         }
     };
 
@@ -415,6 +415,7 @@ const BillsPage = ({ user }) => {
                             placeholder="Bill Name"
                             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
+                            autoComplete="off"
                         />
                         <input
                             type="number"
