@@ -14,7 +14,7 @@ const BillsPage = ({ user }) => {
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentMethod: 'url',
+        paymentUrl: 'url',
         isAutomatic: false
     });
     const [newBill, setNewBill] = useState({
@@ -27,7 +27,7 @@ const BillsPage = ({ user }) => {
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentMethod: 'url',
+        paymentUrl: 'url',
         isAutomatic: false
     });
     const [activeCategory, setActiveCategory] = useState('Family');
@@ -97,8 +97,8 @@ const BillsPage = ({ user }) => {
             setNewBill({ ...newBill, [name]: newValue });
         }
 
-        // Clear paymentUrl if paymentMethod is 'app'
-        if (name === 'paymentMethod') {
+        // Clear paymentUrl if paymentUrl is 'app'
+        if (name === 'paymentUrl') {
             if (value === 'app') {
                 if (editingBill) {
                     setEditingBill({ ...editingBill, paymentUrl: '' });
@@ -435,8 +435,8 @@ const BillsPage = ({ user }) => {
                             required
                         />
                         <select
-                            name="paymentMethod"
-                            value={editingBill ? editingBill.paymentMethod : newBill.paymentMethod}
+                            name="paymentUrl"
+                            value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
                             onChange={handleInputChange}
                             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
@@ -444,7 +444,7 @@ const BillsPage = ({ user }) => {
                             <option value="app">App</option>
                             <option value="mail">Mail</option>
                         </select>
-                        {(editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url') && (
+                        {(editingBill ? editingBill.paymentUrl === 'url' : newBill.paymentUrl === 'url') && (
                             <input
                                 type="url"
                                 name="paymentUrl"
@@ -452,7 +452,7 @@ const BillsPage = ({ user }) => {
                                 onChange={handleInputChange}
                                 placeholder="Payment URL"
                                 className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required={editingBill ? editingBill.paymentMethod === 'url' : newBill.paymentMethod === 'url'}
+                                required={editingBill ? editingBill.paymentUrl === 'url' : newBill.paymentUrl === 'url'}
                             />
                         )}
                         <select
