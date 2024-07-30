@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { ReactComponent as DemaioloLogo } from '../../assets/images/d_logo.svg';
+import { ReactComponent as DemaioloLogo } from '/../assets/images/d_logo.svg';
 
 const Navigation = () => {
     const handleLogout = async () => {
