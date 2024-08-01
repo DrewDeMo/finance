@@ -12,22 +12,32 @@ const RETRY_DELAY = 1000; // 1 second
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const getSession = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    console.error('Error getting session:', error);
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error getting session:', error);
+      return null;
+    }
+    return data.session;
+  } catch (error) {
+    console.error('Unexpected error in getSession:', error);
     return null;
   }
-  return data.session;
 };
 
 export const refreshSession = async (retryCount = 0) => {
-  if (isRefreshing) {
-    await wait(RETRY_DELAY);
-    return refreshSession(retryCount + 1);
-  }
+  try {
+    if (isRefreshing) {
+      await wait(RETRY_DELAY);
+      return refreshSession(retryCount + 1);
+    }
 
-  if (retryCount >= MAX_RETRIES) {
-    console.error('Max retries reached for session refresh');
+    if (retryCount >= MAX_RETRIES) {
+      console.error('Max retries reached for session refresh');
+      return null;
+    }
+  } catch (error) {
+    console.error('Unexpected error in refreshSession:', error);
     return null;
   }
 
