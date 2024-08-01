@@ -401,8 +401,8 @@ const BillsPage = ({ user }) => {
                                 key={category}
                                 onClick={() => setActiveCategory(category)}
                                 className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {category}'s Bills
@@ -499,8 +499,8 @@ const BillsPage = ({ user }) => {
                                         <button
                                             onClick={() => toggleBillStatus(bill.id, bill.status)}
                                             className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
-                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
                                                 }`}
                                         >
                                             {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
