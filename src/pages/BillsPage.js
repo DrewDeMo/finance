@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
+    const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [editingBill, setEditingBill] = useState({
         name: '',
         amount: '',
@@ -34,12 +35,11 @@ const BillsPage = ({ user }) => {
 
     useEffect(() => {
         fetchBills();
-    }, [user]);
+    }, [user, selectedMonth]);
 
     const fetchBills = async () => {
-        const currentDate = new Date();
-        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+        const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
 
         const { data, error } = await supabase
             .from('bills')
@@ -94,9 +94,8 @@ const BillsPage = ({ user }) => {
             }
         }
 
-        const currentDate = new Date();
-        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
+        const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
 
         const { data, error } = await supabase
             .from('bills')
@@ -348,6 +347,13 @@ const BillsPage = ({ user }) => {
 
     const billSummary = summarizeBills(sortedBills);
 
+    const changeMonth = (increment) => {
+        setSelectedMonth(prevDate => {
+            const newDate = new Date(prevDate.getFullYear(), prevDate.getMonth() + increment, 1);
+            return newDate;
+        });
+    };
+
     return (
         <div className="container mx-auto p-6 bg-gray-100">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills Management</h1>
@@ -365,6 +371,18 @@ const BillsPage = ({ user }) => {
                         {category}'s Bills
                     </button>
                 ))}
+            </div>
+
+            <div className="mb-6 flex justify-between items-center">
+                <button onClick={() => changeMonth(-1)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
+                    Previous Month
+                </button>
+                <h2 className="text-2xl font-semibold">
+                    {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                </h2>
+                <button onClick={() => changeMonth(1)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
+                    Next Month
+                </button>
             </div>
 
             <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
