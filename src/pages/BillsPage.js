@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 import { v4 as uuidv4 } from 'uuid';
+import { ChevronRight } from '@heroicons/react/solid';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
