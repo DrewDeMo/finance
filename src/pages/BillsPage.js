@@ -9,25 +9,21 @@ const BillsPage = ({ user }) => {
         name: '',
         amount: '',
         dueDate: '',
-        paymentUrl: '',
         frequency: 'monthly',
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentUrl: 'url',
         isAutomatic: false
     });
     const [newBill, setNewBill] = useState({
         name: '',
         amount: '',
         dueDate: '',
-        paymentUrl: '',
         frequency: 'monthly',
         category: 'Family',
         subcategory: '',
         status: 'unpaid',
         paid_date: null,
-        paymentUrl: 'url',
         isAutomatic: false
     });
     const [activeCategory, setActiveCategory] = useState('Family');
@@ -475,27 +471,6 @@ const BillsPage = ({ user }) => {
                             className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                         />
-                        <select
-                            name="paymentUrl"
-                            value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="url">Payment URL</option>
-                            <option value="app">App</option>
-                            <option value="mail">Mail</option>
-                        </select>
-                        {(editingBill ? editingBill.paymentUrl === 'url' : newBill.paymentUrl === 'url') && (
-                            <input
-                                type="url"
-                                name="paymentUrl"
-                                value={editingBill ? editingBill.paymentUrl : newBill.paymentUrl}
-                                onChange={handleInputChange}
-                                placeholder="Payment URL"
-                                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required={editingBill ? editingBill.paymentUrl === 'url' : newBill.paymentUrl === 'url'}
-                            />
-                        )}
                         <select
                             name="frequency"
                             value={editingBill ? editingBill.frequency : newBill.frequency}
