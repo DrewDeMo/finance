@@ -393,7 +393,7 @@ const BillsPage = ({ user }) => {
         <div className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills Management</h1>
 
-            <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
                 <div className="flex justify-between items-center">
                     <div className="space-x-2">
                         {['All', 'Family', 'Gina', 'Drew'].map(category => (
@@ -401,8 +401,8 @@ const BillsPage = ({ user }) => {
                                 key={category}
                                 onClick={() => setActiveCategory(category)}
                                 className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {category}'s Bills
@@ -410,24 +410,36 @@ const BillsPage = ({ user }) => {
                         ))}
                     </div>
                     <div className="flex items-center space-x-4">
-                        <div className="flex justify-between items-center mb-4">
-                            <button onClick={() => changeMonth(-1)} className="px-4 py-2 bg-blue-500 text-white rounded">Previous Month</button>
-                            <h2 className="text-2xl font-semibold">{selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
-                            <button onClick={() => changeMonth(1)} className="px-4 py-2 bg-blue-500 text-white rounded">Next Month</button>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => changeMonth(-1)}
+                                className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+                            >
+                                <ChevronLeftIcon size={20} />
+                            </button>
+                            <h2 className="text-lg font-semibold">
+                                {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                            </h2>
+                            <button
+                                onClick={() => changeMonth(1)}
+                                className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+                            >
+                                <ChevronRightIcon size={20} />
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-blue-100 rounded-lg">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                         <p className="text-sm text-blue-600 font-medium">Total Amount</p>
                         <p className="text-2xl font-bold text-blue-800">${billSummary.totalAmount}</p>
                     </div>
-                    <div className="p-4 bg-green-100 rounded-lg">
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-100">
                         <p className="text-sm text-green-600 font-medium">Paid Amount</p>
                         <p className="text-2xl font-bold text-green-800">${billSummary.paidAmount}</p>
                     </div>
-                    <div className="p-4 bg-red-100 rounded-lg">
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-100">
                         <p className="text-sm text-red-600 font-medium">Unpaid Amount</p>
                         <p className="text-2xl font-bold text-red-800">${billSummary.unpaidAmount}</p>
                     </div>
@@ -438,7 +450,7 @@ const BillsPage = ({ user }) => {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="p-2 border rounded-md bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="p-2 border rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                         <option value="all">All Bills</option>
                         <option value="paid">Paid Bills</option>
@@ -487,8 +499,8 @@ const BillsPage = ({ user }) => {
                                         <button
                                             onClick={() => toggleBillStatus(bill.id, bill.status)}
                                             className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
-                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
                                                 }`}
                                         >
                                             {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
@@ -513,7 +525,7 @@ const BillsPage = ({ user }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg border border-gray-200">
                 <h3 className="text-xl font-semibold mb-4 text-gray-700">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -575,7 +587,7 @@ const BillsPage = ({ user }) => {
                             <button
                                 type="button"
                                 onClick={cancelEditing}
-                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200"
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200"
                             >
                                 Cancel
                             </button>
