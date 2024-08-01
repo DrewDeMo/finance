@@ -53,28 +53,15 @@ const BillsPage = ({ user }) => {
 
     const handleRecurringBills = async (bills) => {
         const today = new Date();
-        const recurringBills = bills.filter(bill => bill.frequency === 'monthly' || bill.frequency === 'bi-monthly');
+        const recurringBills = bills.filter(bill => bill.frequency === 'monthly');
 
         for (const bill of recurringBills) {
             const dueDate = new Date(bill.dueDate);
-            if (dueDate < today) {
-                let nextDueDate;
-                if (bill.frequency === 'monthly') {
-                    nextDueDate = new Date(today.getFullYear(), today.getMonth() + 1, dueDate.getDate());
-                    if (nextDueDate.getMonth() !== (today.getMonth() + 1) % 12) {
-                        // If the calculated date is not in the next month, set it to the last day of the next month
-                        nextDueDate.setDate(0);
-                    }
-                } else if (bill.frequency === 'bi-monthly') {
-                    nextDueDate = new Date(today.getFullYear(), today.getMonth() + 2, dueDate.getDate());
-                    if (nextDueDate.getMonth() !== (today.getMonth() + 2) % 12) {
-                        // If the calculated date is not in the next two months, set it to the last day of the next two months
-                        nextDueDate.setDate(0);
-                    }
-                }
-                const newBill = { ...bill, dueDate: nextDueDate.toISOString() };
-                await supabase.from('bills').insert([newBill]);
+            while (dueDate < today) {
+                dueDate.setMonth(dueDate.getMonth() + 1);
             }
+            const newBill = { ...bill, dueDate: dueDate.toISOString() };
+            await supabase.from('bills').insert([newBill]);
         }
 
         const { data, error } = await supabase
