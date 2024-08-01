@@ -133,6 +133,8 @@ const BillsPage = ({ user }) => {
         return data;
     };
 
+    const [sentNotifications, setSentNotifications] = useState(new Set());
+
     const checkBillsStatus = (bills) => {
         const today = new Date();
         const updatedBills = bills.map(bill => {
@@ -162,18 +164,19 @@ const BillsPage = ({ user }) => {
             return daysDiff <= 3 && daysDiff > 0 && bill.status === 'unpaid';
         });
 
-        // Create a Set to keep track of notifications we've already sent
-        const sentNotifications = new Set();
+        const newSentNotifications = new Set(sentNotifications);
 
         upcomingBills.forEach(bill => {
             const daysDue = Math.ceil((new Date(bill.dueDate) - today) / (1000 * 60 * 60 * 24));
             const notificationKey = `${bill.name}-${daysDue}`;
 
-            if (!sentNotifications.has(notificationKey)) {
+            if (!newSentNotifications.has(notificationKey)) {
                 addNotification(`${bill.name} is due in ${daysDue} days`, 'warning');
-                sentNotifications.add(notificationKey);
+                newSentNotifications.add(notificationKey);
             }
         });
+
+        setSentNotifications(newSentNotifications);
     };
 
     const handleInputChange = (e) => {
