@@ -36,10 +36,16 @@ const BillsPage = ({ user }) => {
     }, [user]);
 
     const fetchBills = async () => {
+        const currentDate = new Date();
+        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
         const { data, error } = await supabase
             .from('bills')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .gte('dueDate', startOfMonth.toISOString())
+            .lte('dueDate', endOfMonth.toISOString());
 
         if (error) {
             console.error('Error fetching bills:', error);
@@ -56,7 +62,7 @@ const BillsPage = ({ user }) => {
         const recurringBills = bills.filter(bill => bill.frequency === 'monthly');
 
         for (const bill of recurringBills) {
-            const dueDate = new Date(bill.dueDate);
+            let dueDate = new Date(bill.dueDate);
             while (dueDate < today) {
                 dueDate.setMonth(dueDate.getMonth() + 1);
             }
@@ -64,10 +70,16 @@ const BillsPage = ({ user }) => {
             await supabase.from('bills').insert([newBill]);
         }
 
+        const currentDate = new Date();
+        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
         const { data, error } = await supabase
             .from('bills')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .gte('dueDate', startOfMonth.toISOString())
+            .lte('dueDate', endOfMonth.toISOString());
 
         if (error) {
             console.error('Error fetching updated bills:', error);
