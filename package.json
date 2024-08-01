@@ -19,6 +19,7 @@
     "react-toastify": "^10.0.4",
     "recharts": "^2.10.4",
     "supabase": "^1.187.8",
+    "uuid": "^10.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
