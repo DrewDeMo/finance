@@ -5,6 +5,12 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+let isRefreshing = false;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const getSession = async () => {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
@@ -14,13 +20,31 @@ export const getSession = async () => {
   return data.session;
 };
 
-export const refreshSession = async () => {
-  const { data, error } = await supabase.auth.refreshSession();
-  if (error) {
-    console.error('Error refreshing session:', error);
+export const refreshSession = async (retryCount = 0) => {
+  if (isRefreshing) {
+    await wait(RETRY_DELAY);
+    return refreshSession(retryCount + 1);
+  }
+
+  if (retryCount >= MAX_RETRIES) {
+    console.error('Max retries reached for session refresh');
     return null;
   }
-  return data.session;
+
+  try {
+    isRefreshing = true;
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) {
+      console.error('Error refreshing session:', error);
+      return null;
+    }
+    return data.session;
+  } catch (error) {
+    console.error('Unexpected error during session refresh:', error);
+    return null;
+  } finally {
+    isRefreshing = false;
+  }
 };
 
 export const signIn = async (email, password) => {
