@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 import { v4 as uuidv4 } from 'uuid';
-import { ChevronRight } from '@heroicons/react/solid';
+import { ChevronRightIcon } from '@heroicons/react/24/solid';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
@@ -411,7 +411,7 @@ const BillsPage = ({ user }) => {
                     </div>
                     <div className="flex items-center space-x-4">
                         <button onClick={() => changeMonth(1)} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRightIcon className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
