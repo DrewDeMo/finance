@@ -67,7 +67,11 @@ const BillsPage = ({ user }) => {
                 dueDate.setMonth(dueDate.getMonth() + 1);
             }
             const newBill = { ...bill, dueDate: dueDate.toISOString() };
-            await supabase.from('bills').insert([newBill]);
+            const { data, error } = await supabase.from('bills').insert([newBill]);
+            if (error) {
+                console.error('Error inserting recurring bill:', error);
+                addNotification('Error inserting recurring bill', 'error');
+            }
         }
 
         const currentDate = new Date();
