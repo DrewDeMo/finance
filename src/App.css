@@ -43,3 +43,10 @@
 body {
   background-color: rgb(243 244 246/var(--tw-bg-opacity)) !important;
 }
+
+
+.logo_icon {
+  width: 40px;
+  height: 40px;
+  margin: 1em;
+}

@@ -142,8 +142,17 @@ const BillsPage = ({ user }) => {
             return daysDiff <= 3 && daysDiff > 0 && bill.status === 'unpaid';
         });
 
+        // Create a Set to keep track of notifications we've already sent
+        const sentNotifications = new Set();
+
         upcomingBills.forEach(bill => {
-            addNotification(`${bill.name} is due in ${Math.ceil((new Date(bill.dueDate) - today) / (1000 * 60 * 60 * 24))} days`, 'warning');
+            const daysDue = Math.ceil((new Date(bill.dueDate) - today) / (1000 * 60 * 60 * 24));
+            const notificationKey = `${bill.name}-${daysDue}`;
+            
+            if (!sentNotifications.has(notificationKey)) {
+                addNotification(`${bill.name} is due in ${daysDue} days`, 'warning');
+                sentNotifications.add(notificationKey);
+            }
         });
     };
 
