@@ -375,14 +375,23 @@ const BillsPage = ({ user }) => {
 
     const billSummary = summarizeBills(sortedBills);
 
+    const [isMonthLoading, setIsMonthLoading] = useState(false);
+
     const changeMonth = (increment) => {
+        setIsMonthLoading(true);
         setSelectedMonth(prevDate => {
             const newDate = new Date(prevDate.getFullYear(), prevDate.getMonth() + increment, 1);
             return newDate;
         });
     };
 
-    if (isLoading) {
+    useEffect(() => {
+        if (isMonthLoading) {
+            fetchBills().finally(() => setIsMonthLoading(false));
+        }
+    }, [isMonthLoading]);
+
+    if (isLoading || isMonthLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <ClipLoader color="#10B981" size={150} />
