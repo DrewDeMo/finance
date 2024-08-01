@@ -70,7 +70,7 @@ const BillsPage = ({ user }) => {
             const { data, error } = await supabase.from('bills').insert([newBill]);
             if (error) {
                 console.error('Error inserting recurring bill:', error);
-                addNotification('Error inserting recurring bill', 'error');
+                addNotification(`Error inserting recurring bill: ${error.message}`, 'error');
             }
         }
 
@@ -87,7 +87,7 @@ const BillsPage = ({ user }) => {
 
         if (error) {
             console.error('Error fetching updated bills:', error);
-            addNotification('Error fetching updated bills', 'error');
+            addNotification(`Error fetching updated bills: ${error.message}`, 'error');
             return bills;
         }
 
