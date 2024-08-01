@@ -25,7 +25,7 @@ const Navigation = () => {
                     <svg class="logo_icon">
                         <use href="#new-d"></use>
                     </svg>
-                    <span className="text-white font-bold text-xl">FinanceApp</span>
+                    <span className="text-white font-bold text-xl">DeMaiolo Finance</span>
                 </Link>
                 <div className="flex items-center">
                     <Link to="/" className="text-white mr-4 hover:text-gray-300">Home</Link>
