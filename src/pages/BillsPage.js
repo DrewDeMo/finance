@@ -4,6 +4,7 @@ import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 import { v4 as uuidv4 } from 'uuid';
 import { ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ClipLoader } from 'react-spinners';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
@@ -382,7 +383,11 @@ const BillsPage = ({ user }) => {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <ClipLoader color="#10B981" size={150} />
+            </div>
+        );
     }
 
     if (error) {
