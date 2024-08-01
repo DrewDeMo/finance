@@ -11,30 +11,57 @@ const Navigation = () => {
     };
 
     return (
-        <nav className="bg-gray-800 p-4">
-            <div className="container mx-auto flex justify-between items-center">
-                <Link to="/" className="flex items-center">
-                    <svg width="0" height="0" class="hidden">
-                        <symbol fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 689 691" id="new-d">
-                            <path id="Vector" d="M684.977 350.963C680.847 323.393 673.117 296.783 662.097 271.133C642.637 225.833 614.827 186.803 576.037 155.963C574.277 154.563 572.677 152.963 570.987 151.443C575.487 144.213 580.607 138.323 586.607 133.263C602.397 119.963 620.007 117.043 639.317 124.373C647.347 127.423 654.227 132.363 661.027 137.473C666.957 141.933 671.027 141.033 674.217 134.393C683.017 116.103 688.007 97.0831 685.497 76.5031C682.147 49.0331 668.437 28.2431 645.167 13.7731C629.077 3.76314 611.267 -0.126856 592.317 0.00314416C572.627 0.143144 555.117 6.24314 539.147 17.3931C527.427 25.5731 517.407 35.6031 509.157 47.1631C497.747 63.1331 486.987 79.5631 475.927 95.7831C474.717 97.5531 473.427 99.2631 471.957 101.303C469.587 100.773 467.337 100.353 465.127 99.7731C427.037 89.8631 388.467 85.1931 349.047 87.9531C326.427 89.5331 304.137 92.8731 282.127 98.1831C220.497 113.063 169.317 144.653 129.587 194.203C105.827 223.843 91.1568 257.293 87.9668 295.553C86.4168 314.133 87.2268 332.483 91.2768 350.583C99.3168 386.473 123.557 416.653 158.627 429.223C188.777 440.023 223.207 436.833 251.927 422.643C280.647 408.453 303.647 383.803 317.927 355.133C318.967 353.043 319.997 350.763 319.617 348.453C318.767 343.323 312.297 341.873 307.227 340.713C291.857 337.183 278.857 325.803 271.717 311.743C264.577 297.673 262.967 281.193 265.447 265.613C271.077 230.253 297.537 200.093 330.207 185.443C362.877 170.793 400.817 170.533 435.367 179.933C401.167 253.903 366.607 328.483 317.727 393.693C294.097 425.213 266.357 455.003 230.887 472.143C190.077 491.863 130.877 491.183 99.0668 454.793C89.4868 443.833 83.5268 430.373 78.8468 416.733C75.1568 405.963 74.3768 381.063 58.4268 380.423C53.1068 380.213 48.8968 384.683 45.6368 388.893C9.33683 435.783 -8.80317 501.563 4.19683 560.043C5.10683 564.143 6.11683 568.213 7.29683 572.243C9.61683 580.153 12.4768 587.903 15.8468 595.433C45.2768 661.083 111.767 696.993 181.537 687.973C208.367 684.503 233.097 674.963 255.427 659.713C268.197 650.993 280.457 641.503 292.957 632.383C294.527 631.233 296.187 630.203 298.817 628.433C300.027 630.143 300.897 631.833 302.177 633.093C308.107 638.903 313.827 645.013 320.227 650.273C350.317 674.973 385.447 687.143 423.837 689.983C443.087 691.413 462.357 690.303 481.437 686.463C536.957 675.283 583.337 648.333 620.187 605.533C664.387 554.193 684.357 493.323 688.227 426.563C688.987 413.473 688.807 400.293 688.257 387.183C687.747 375.083 686.737 362.943 684.947 350.973L684.977 350.963ZM572.947 369.143C571.097 391.053 565.867 412.133 556.707 432.093C539.357 469.903 513.067 499.923 477.047 520.993C462.837 529.303 447.287 533.953 430.847 535.873C413.557 537.883 396.677 536.043 379.957 531.733C378.517 531.363 377.087 530.873 375.707 530.323C375.127 530.093 374.677 529.553 373.747 528.833C423.857 428.223 473.947 327.653 524.357 226.433C526.347 228.213 527.737 229.333 528.977 230.603C552.167 254.193 567.057 282.003 571.957 314.923C574.637 332.963 574.487 351.033 572.957 369.153L572.947 369.143Z" fill="white"></path>
-                        </symbol>
-                    </svg>
+        <nav className="bg-gray-800 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center">
+                        <Link to="/" className="flex-shrink-0">
+                            <svg width="32" height="32" className="text-white">
+                                <use href="#new-d"></use>
+                            </svg>
+                        </Link>
+                        <span className="ml-2 text-white font-bold text-xl">DeMaiolo Finance</span>
+                    </div>
+                    <div className="hidden md:block">
+                        <div className="ml-10 flex items-baseline space-x-4">
+                            <Link to="/" className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">Home</Link>
+                            <Link to="/bills" className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">Bills</Link>
+                            <Link to="/calendar" className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">Calendar</Link>
+                            <Link to="/analysis" className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">Analysis</Link>
+                        </div>
+                    </div>
+                    <div className="hidden md:block">
+                        <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out">
+                            Logout
+                        </button>
+                    </div>
+                    <div className="-mr-2 flex md:hidden">
+                        <button type="button" className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                            <span className="sr-only">Open main menu</span>
+                            <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <svg className="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-
-
-                    <svg class="logo_icon">
-                        <use href="#new-d"></use>
-                    </svg>
-                    <span className="text-white font-bold text-xl">DeMaiolo Finance</span>
-                </Link>
-                <div className="flex items-center">
-                    <Link to="/" className="text-white mr-4 hover:text-gray-300">Home</Link>
-                    <Link to="/bills" className="text-white mr-4 hover:text-gray-300">Bills</Link>
-                    <Link to="/calendar" className="text-white mr-4 hover:text-gray-300">Calendar</Link>
-                    <Link to="/analysis" className="text-white mr-4 hover:text-gray-300">Analysis</Link>
-                    <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                        Logout
-                    </button>
+            <div className="md:hidden" id="mobile-menu">
+                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <Link to="/" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</Link>
+                    <Link to="/bills" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Bills</Link>
+                    <Link to="/calendar" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Calendar</Link>
+                    <Link to="/analysis" className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Analysis</Link>
+                </div>
+                <div className="pt-4 pb-3 border-t border-gray-700">
+                    <div className="px-2">
+                        <button onClick={handleLogout} className="block w-full text-center px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
