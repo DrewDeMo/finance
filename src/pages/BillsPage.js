@@ -364,38 +364,38 @@ const BillsPage = ({ user }) => {
     };
 
     return (
-        <div className="container mx-auto p-6 bg-gray-100">
+        <div className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills Management</h1>
 
-            <div className="mb-6 flex space-x-4">
-                {['All', 'Family', 'Gina', 'Drew'].map(category => (
-                    <button
-                        key={category}
-                        onClick={() => setActiveCategory(category)}
-                        className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
-                    >
-                        {category}'s Bills
-                    </button>
-                ))}
-            </div>
+            <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                    <div className="space-x-2">
+                        {['All', 'Family', 'Gina', 'Drew'].map(category => (
+                            <button
+                                key={category}
+                                onClick={() => setActiveCategory(category)}
+                                className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    }`}
+                            >
+                                {category}'s Bills
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <button onClick={() => changeMonth(-1)} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <h2 className="text-lg font-semibold">
+                            {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </h2>
+                        <button onClick={() => changeMonth(1)} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
 
-            <div className="mb-6 flex justify-between items-center">
-                <button onClick={() => changeMonth(-1)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
-                    Previous Month
-                </button>
-                <h2 className="text-2xl font-semibold">
-                    {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                </h2>
-                <button onClick={() => changeMonth(1)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
-                    Next Month
-                </button>
-            </div>
-
-            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-gray-700">Summary</h3>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-blue-100 rounded-lg">
                         <p className="text-sm text-blue-600 font-medium">Total Amount</p>
@@ -410,87 +410,88 @@ const BillsPage = ({ user }) => {
                         <p className="text-2xl font-bold text-red-800">${billSummary.unpaidAmount}</p>
                     </div>
                 </div>
-            </div>
 
-            <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-semibold text-gray-700">{activeCategory}'s Bills</h2>
-                <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="p-2 border rounded-md bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                    <option value="all">All Bills</option>
-                    <option value="paid">Paid Bills</option>
-                    <option value="unpaid">Unpaid Bills</option>
-                </select>
-            </div>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-gray-700">{activeCategory}'s Bills</h2>
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="p-2 border rounded-md bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        <option value="all">All Bills</option>
+                        <option value="paid">Paid Bills</option>
+                        <option value="unpaid">Unpaid Bills</option>
+                    </select>
+                </div>
 
-            <div className="overflow-x-auto bg-white rounded-lg shadow">
-                <table className="w-full table-auto">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            {['Name', 'Amount', 'Due Date', 'Subcategory', 'Status', 'Automatic', 'Actions'].map((header) => (
-                                <th
-                                    key={header}
-                                    onClick={() => requestSort(header.toLowerCase())}
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                                >
-                                    {header}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {sortedBills.map((bill) => (
-                            <tr key={bill.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bill.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${bill.amount}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(bill.dueDate).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bill.subcategory}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {bill.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button
-                                        onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
-                                        className={`px-3 py-1 rounded-full text-xs font-medium ${bill.isAutomatic ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
+                <div className="overflow-x-auto">
+                    <table className="w-full table-auto">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                {['Name', 'Amount', 'Due Date', 'Subcategory', 'Status', 'Automatic', 'Actions'].map((header) => (
+                                    <th
+                                        key={header}
+                                        onClick={() => requestSort(header.toLowerCase())}
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                     >
-                                        {bill.isAutomatic ? 'Disable Auto Pay' : 'Enable Auto Pay'}
-                                    </button>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button
-                                        onClick={() => toggleBillStatus(bill.id, bill.status)}
-                                        className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
-                                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                            : 'bg-red-100 text-red-800 hover:bg-red-200'
-                                            }`}
-                                    >
-                                        {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
-                                    </button>
-                                    <button
-                                        onClick={() => startEditing(bill)}
-                                        className="mr-2 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => deleteBill(bill.id)}
-                                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                                        {header}
+                                    </th>
+                                ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {sortedBills.map((bill) => (
+                                <tr key={bill.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bill.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${bill.amount}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bill.subcategory}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                            {bill.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button
+                                            onClick={() => toggleAutoPay(bill.id, bill.isAutomatic)}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium ${bill.isAutomatic ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                }`}
+                                        >
+                                            {bill.isAutomatic ? 'Disable Auto Pay' : 'Enable Auto Pay'}
+                                        </button>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button
+                                            onClick={() => toggleBillStatus(bill.id, bill.status)}
+                                            className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
+                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                }`}
+                                        >
+                                            {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+                                        </button>
+                                        <button
+                                            onClick={() => startEditing(bill)}
+                                            className="mr-2 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => deleteBill(bill.id)}
+                                            className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div className="mt-8 bg-white p-6 rounded-lg shadow">
+            <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold mb-4 text-gray-700">{editingBill ? 'Edit Bill' : 'Add New Bill'}</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
