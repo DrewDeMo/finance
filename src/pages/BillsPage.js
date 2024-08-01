@@ -61,17 +61,36 @@ const BillsPage = ({ user }) => {
     const handleRecurringBills = async (bills) => {
         const today = new Date();
         const recurringBills = bills.filter(bill => bill.frequency === 'monthly');
+        const newBillsToInsert = [];
 
         for (const bill of recurringBills) {
             let dueDate = new Date(bill.dueDate);
             while (dueDate < today) {
                 dueDate.setMonth(dueDate.getMonth() + 1);
+                const newBill = {
+                    ...bill,
+                    id: uuidv4(),
+                    dueDate: dueDate.toISOString(),
+                    user_id: user.id,
+                    status: 'unpaid',
+                    paid_date: null
+                };
+                // Check if a bill with the same name and due date already exists
+                const existingBill = bills.find(b => b.name === newBill.name && b.dueDate === newBill.dueDate);
+                if (!existingBill) {
+                    newBillsToInsert.push(newBill);
+                }
             }
-            const newBill = { ...bill, id: uuidv4(), dueDate: dueDate.toISOString() };
-            const { data, error } = await supabase.from('bills').insert([newBill]);
+        }
+
+        if (newBillsToInsert.length > 0) {
+            const { data, error } = await supabase.from('bills').insert(newBillsToInsert);
             if (error) {
-                console.error('Error inserting recurring bill:', error);
-                addNotification(`Error inserting recurring bill: ${error.message}`, 'error');
+                console.error('Error inserting recurring bills:', error);
+                addNotification(`Error inserting recurring bills: ${error.message}`, 'error');
+            } else {
+                console.log('Successfully inserted recurring bills:', data);
+                addNotification('Recurring bills updated successfully', 'success');
             }
         }
 
