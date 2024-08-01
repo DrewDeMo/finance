@@ -22,7 +22,7 @@ const Navigation = () => {
 
 
 
-                    <svg class="icon" style={{ height: '1.25em' }}>
+                    <svg class="icon" style={{ height: '2.5em' }}>
                         <use href="#new-d"></use>
                     </svg>
                     <span className="text-white font-bold text-xl">FinanceApp</span>
