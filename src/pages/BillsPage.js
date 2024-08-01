@@ -7,16 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState(new Date());
-    const [editingBill, setEditingBill] = useState({
-        name: '',
-        amount: '',
-        dueDate: '',
-        frequency: 'monthly',
-        subcategory: '',
-        status: 'unpaid',
-        paid_date: null,
-        isAutomatic: false
-    });
+    const [editingBill, setEditingBill] = useState(null);
     const [newBill, setNewBill] = useState({
         name: '',
         amount: '',
@@ -32,9 +23,33 @@ const BillsPage = ({ user }) => {
     const [sortConfig, setSortConfig] = useState({ key: 'dueDate', direction: 'ascending' });
     const [filterStatus, setFilterStatus] = useState('all');
     const { addNotification } = useNotification();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchBills();
+        const initializePage = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                let session = await getSession();
+                if (!session) {
+                    addNotification('Refreshing session...', 'info');
+                    session = await refreshSession();
+                    if (!session) {
+                        throw new Error('Failed to authenticate user');
+                    }
+                }
+                await fetchBills();
+            } catch (err) {
+                console.error('Error initializing page:', err);
+                setError('Failed to load bills. Please try refreshing the page.');
+                addNotification('Error loading bills', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializePage();
     }, [user, selectedMonth]);
 
     const fetchBills = async () => {
@@ -51,6 +66,7 @@ const BillsPage = ({ user }) => {
         if (error) {
             console.error('Error fetching bills:', error);
             addNotification('Error fetching bills', 'error');
+            throw error;
         } else {
             const updatedBills = await handleRecurringBills(data);
             setBills(updatedBills);
@@ -276,7 +292,6 @@ const BillsPage = ({ user }) => {
         }
     };
 
-
     const deleteBill = async (id) => {
         const { error } = await supabase
             .from('bills')
@@ -363,6 +378,14 @@ const BillsPage = ({ user }) => {
         });
     };
 
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    }
+
     return (
         <div className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Bills Management</h1>
@@ -375,8 +398,8 @@ const BillsPage = ({ user }) => {
                                 key={category}
                                 onClick={() => setActiveCategory(category)}
                                 className={`px-4 py-2 rounded-full transition-colors duration-200 ${activeCategory === category
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                     }`}
                             >
                                 {category}'s Bills
@@ -465,8 +488,8 @@ const BillsPage = ({ user }) => {
                                         <button
                                             onClick={() => toggleBillStatus(bill.id, bill.status)}
                                             className={`mr-2 px-3 py-1 rounded-full text-xs font-medium ${bill.status === 'paid'
-                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
                                                 }`}
                                         >
                                             {bill.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
@@ -572,3 +595,4 @@ const BillsPage = ({ user }) => {
 };
 
 export default BillsPage;
+
