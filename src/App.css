@@ -34,7 +34,12 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.App {
+  background-color: rgb(243 244 246/var(--tw-bg-opacity));
 }
