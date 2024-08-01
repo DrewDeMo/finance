@@ -23,7 +23,7 @@ const Navigation = () => {
 
 
                     <svg class="icon">
-                        <use xlink:href="#new-d"></use>
+                        <use href="#new-d"></use>
                     </svg>
                     <span className="text-white font-bold text-xl">FinanceApp</span>
                 </Link>
