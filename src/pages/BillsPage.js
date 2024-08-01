@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
+import { v4 as uuidv4 } from 'uuid';
 
 const BillsPage = ({ user }) => {
     const [bills, setBills] = useState([]);
@@ -66,7 +67,7 @@ const BillsPage = ({ user }) => {
             while (dueDate < today) {
                 dueDate.setMonth(dueDate.getMonth() + 1);
             }
-            const newBill = { ...bill, dueDate: dueDate.toISOString() };
+            const newBill = { ...bill, id: uuidv4(), dueDate: dueDate.toISOString() };
             const { data, error } = await supabase.from('bills').insert([newBill]);
             if (error) {
                 console.error('Error inserting recurring bill:', error);
