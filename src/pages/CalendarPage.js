@@ -9,16 +9,27 @@ const localizer = momentLocalizer(moment);
 
 const CalendarPage = ({ user }) => {
     const [events, setEvents] = useState([]);
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
         fetchBills();
-    }, [user]);
+        const timer = setInterval(() => {
+            setCurrentDate(new Date());
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
+    }, [user, currentDate]);
 
     const fetchBills = async () => {
+        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
         const { data, error } = await supabase
             .from('bills')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .gte('dueDate', startOfMonth.toISOString())
+            .lte('dueDate', endOfMonth.toISOString());
 
         if (error) {
             console.error('Error fetching bills:', error);
@@ -49,6 +60,7 @@ const CalendarPage = ({ user }) => {
     return (
         <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Bill Calendar</h1>
+            <h2 className="text-2xl font-semibold mb-4">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <Calendar
                     localizer={localizer}
@@ -58,6 +70,8 @@ const CalendarPage = ({ user }) => {
                     style={{ height: 'calc(100vh - 200px)' }}
                     eventPropGetter={eventStyleGetter}
                     className="rounded-lg overflow-hidden"
+                    date={currentDate}
+                    onNavigate={(date) => setCurrentDate(date)}
                 />
             </div>
         </div>

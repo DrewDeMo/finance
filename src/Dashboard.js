@@ -18,16 +18,27 @@ const Dashboard = ({ user }) => {
     const [totalDue, setTotalDue] = useState(0);
     const [upcomingBills, setUpcomingBills] = useState([]);
     const [categorySummary, setCategorySummary] = useState([]);
+    const [currentMonth, setCurrentMonth] = useState(new Date());
 
     useEffect(() => {
         fetchBills();
-    }, [user]);
+        const timer = setInterval(() => {
+            setCurrentMonth(new Date());
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
+    }, [user, currentMonth]);
 
     const fetchBills = async () => {
+        const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
         const { data, error } = await supabase
             .from('bills')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .gte('dueDate', startOfMonth.toISOString())
+            .lte('dueDate', endOfMonth.toISOString());
 
         if (error) {
             console.error('Error fetching bills:', error);
@@ -64,6 +75,7 @@ const Dashboard = ({ user }) => {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-6">Financial Dashboard</h1>
+            <h2 className="text-2xl font-semibold mb-4">{currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-lg shadow-md">
