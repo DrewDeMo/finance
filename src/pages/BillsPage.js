@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, getSession, refreshSession } from '../supabaseClient';
 import { useNotification } from '../context/NotificationContext';
 import { v4 as uuidv4 } from 'uuid';
-import { ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { ClipLoader } from 'react-spinners';
 
 const BillsPage = ({ user }) => {
