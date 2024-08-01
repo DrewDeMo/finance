@@ -410,9 +410,11 @@ const BillsPage = ({ user }) => {
                         ))}
                     </div>
                     <div className="flex items-center space-x-4">
-                        <button onClick={() => changeMonth(1)} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                            <ChevronRightIcon className="w-5 h-5" />
-                        </button>
+                        <div className="flex justify-between items-center mb-4">
+                            <button onClick={() => changeMonth(-1)} className="px-4 py-2 bg-blue-500 text-white rounded">Previous Month</button>
+                            <h2 className="text-2xl font-semibold">{selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                            <button onClick={() => changeMonth(1)} className="px-4 py-2 bg-blue-500 text-white rounded">Next Month</button>
+                        </div>
                     </div>
                 </div>
 
